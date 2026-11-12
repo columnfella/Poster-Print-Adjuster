@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poster Print Checker</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+--g:linear-gradient(120deg,#5b4bff,#b14bff 55%,#ff4fa3);
+--bg:#f3f1ff;--b1:rgba(91,75,255,.16);--b2:rgba(255,79,163,.13);--card:#fff;--text:#14122b;--muted:#625f80;--line:#e3e0f5;--soft:#f4f2ff;--brand:#5b4bff;--tint:#ebe8ff;
+--ok:#0b6b3a;--ok-bg:#d9f5e5;--ok-s:#16a34a;--warn:#7a4300;--warn-bg:#ffecc7;--warn-s:#f5a30b;--bad:#a8200f;--bad-bg:#ffe0e0;--bad-s:#ef4444;
+--wall:#e9e4ff;--floor:#cfc6f5;--sofa:#14b8a6;--sofa2:#0e8f82;--pe:#2b2a55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--bg:#0d0c1d;--b1:rgba(91,75,255,.28);--b2:rgba(255,79,163,.16);--card:#171631;--text:#eeedff;--muted:#a09dc4;--line:#2b2950;--soft:#201f40;--brand:#8b7fff;--tint:#2a2759;
+--ok:#6ee7a0;--ok-bg:#0f3022;--ok-s:#22c55e;--warn:#fbbf5a;--warn-bg:#3a2a0c;--warn-s:#f5a30b;--bad:#ff9a9a;--bad-bg:#3b1519;--bad-s:#ef4444;
+--wall:#232248;--floor:#16152f;--sofa:#14b8a6;--sofa2:#0e8f82;--pe:#d7d5ff}}
+:root[data-theme="dark"]{color-scheme:dark;
+--bg:#0d0c1d;--b1:rgba(91,75,255,.28);--b2:rgba(255,79,163,.16);--card:#171631;--text:#eeedff;--muted:#a09dc4;--line:#2b2950;--soft:#201f40;--brand:#8b7fff;--tint:#2a2759;
+--ok:#6ee7a0;--ok-bg:#0f3022;--ok-s:#22c55e;--warn:#fbbf5a;--warn-bg:#3a2a0c;--warn-s:#f5a30b;--bad:#ff9a9a;--bad-bg:#3b1519;--bad-s:#ef4444;
+--wall:#232248;--floor:#16152f;--sofa:#14b8a6;--sofa2:#0e8f82;--pe:#d7d5ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{margin:0;color:var(--text);font:15px/1.55 "Avenir Next","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(800px 420px at 8% -8%,var(--b1),transparent 65%),radial-gradient(700px 420px at 100% 0,var(--b2),transparent 60%),var(--bg)}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 56px}
+.hero{background:var(--g);color:#fff;border-radius:24px;padding:26px;margin-bottom:18px}
+h1{margin:0 0 6px;font-size:clamp(1.8rem,5vw,2.5rem);line-height:1.1;letter-spacing:-.03em;font-weight:800}
+.hero p{margin:0;max-width:62ch;opacity:.93}
+h2{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:1.05rem;font-weight:750;letter-spacing:-.01em}
+h2 i{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--tint);color:var(--brand);flex:none}
+h2 svg,.drop svg,.ico svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+h2 svg{width:18px;height:18px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.side,.work{display:contents}
+.up{order:0}.ed{order:1}.vd{order:2}.qa{order:3}.qr{order:4}.wl{order:5}
+@media(min-width:960px){.layout{grid-template-columns:320px minmax(0,1fr);align-items:start}.side,.work{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 12px 32px -18px rgba(91,75,255,.35)}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--text);font:inherit;font-weight:600}
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px}
+.seg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font:inherit;font-weight:700;padding:8px 12px;cursor:pointer;transition:background .2s,color .2s}
+.seg button[aria-pressed=true]{background:var(--g);color:#fff}
+.btn{border:0;border-radius:12px;padding:10px 14px;background:var(--tint);color:var(--brand);font:inherit;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn.pri{background:var(--g);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.note{color:var(--muted);font-size:.85rem;margin:10px 0 0}
+:is(select,button,.drop,input):focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.drop{display:grid;gap:2px;justify-items:center;border:2px dashed var(--brand);border-radius:16px;padding:22px 14px;text-align:center;cursor:pointer;background:var(--tint);transition:transform .2s}
+.drop svg{width:30px;height:30px;color:var(--brand);margin-bottom:4px}
+.drop span{color:var(--muted);font-size:.85rem}
+.drop:hover,.drop.over{transform:scale(1.015)}
+.err{color:var(--bad);font-size:.85rem;margin:0}
+.err:not(:empty){margin-top:10px}
+.tag{padding:2px 9px;border-radius:99px;font-weight:700;font-size:.75rem;transition:background .3s,color .3s}
+.tag.ct{background:var(--tint);color:var(--brand)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.list{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.row,.tile{position:relative}
+.rowb{display:flex;gap:10px;align-items:center;width:100%;padding:8px 34px 8px 8px;border:2px solid transparent;border-radius:14px;background:var(--soft);color:inherit;font:inherit;text-align:left;cursor:pointer}
+.row.on .rowb,.tile.on{border-color:var(--brand)}
+.rowb img{width:44px;height:44px;object-fit:cover;border-radius:10px;flex:none}
+.rowb>span:nth-child(2){min-width:0;flex:1}
+.rowb b,.cap{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}
+.rowb small,.tile small{display:block;color:var(--muted);font-size:.75rem}
+.rowb .tag{position:absolute;right:38px;top:8px}
+.rowb b{margin-right:46px}
+.rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,18,43,.72);color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px}
+.tile{background:var(--soft);border:2px solid transparent;border-radius:14px;padding:8px}
+.pick{display:block;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.tile img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:var(--card);border-radius:8px;margin-bottom:6px}
+.dl{width:100%;margin-top:8px;padding:7px 8px;font-size:.78rem}
+.bar2{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:12px}
+.bar2>div:first-child{flex:1 1 140px}
+.bar2 .seg{flex:1 1 200px}
+.stage{display:grid;place-items:center;background:var(--soft);border-radius:16px;padding:14px;-webkit-user-select:none;user-select:none}
+#cv{display:block;background:#fff;border-radius:3px;box-shadow:0 8px 24px -8px rgba(20,18,43,.45);touch-action:none;cursor:grab;max-width:100%}
+#cv:active,#icv:active{cursor:grabbing}
+.tools,.acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.tools input{flex:1 1 150px;accent-color:var(--brand)}
+.tools label{margin:0}
+.acts .pri{flex:1 1 200px}
+.empty{color:var(--muted);margin:0;padding:24px 0;text-align:center}
+.hd{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.hd img{width:56px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--line);flex:none}
+.hd b{display:block;overflow-wrap:anywhere}
+.px{font-weight:700;color:var(--brand)}
+.status{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:18px;border-radius:18px;transition:background .35s,color .35s}
+.ico{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;color:#fff;flex:none;transition:background .35s}
+.ico svg{width:28px;height:28px}
+.status.ok{background:var(--ok-bg);color:var(--ok)}.status.ok .ico{background:var(--ok-s)}
+.status.warn{background:var(--warn-bg);color:var(--warn)}.status.warn .ico{background:var(--warn-s);color:#3b2300}
+.status.bad{background:var(--bad-bg);color:var(--bad)}.status.bad .ico{background:var(--bad-s)}
+.txt{flex:1 1 170px}
+.tier{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.msg{color:var(--text);font-size:.92rem}
+.dpi{margin-left:auto;text-align:right;font-size:2rem;font-weight:800;line-height:1}
+.dpi small{display:block;margin-top:4px;font-size:.75rem;font-weight:500}
+.gauge{position:relative;margin:28px 4px 4px}
+.bar{height:12px;border-radius:9px;background:linear-gradient(90deg,#ef4444 0 33.33%,#f5a30b 33.33% 66.66%,#22c55e 66.66% 100%)}
+.pin{position:absolute;left:0;top:-6px;width:4px;height:24px;margin-left:-2px;border-radius:3px;background:var(--text);outline:3px solid var(--card);transition:left .4s cubic-bezier(.2,.8,.2,1)}
+.ticks{position:relative;height:18px;margin-top:10px;font-size:.75rem;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.ticks span:first-child{transform:none}
+.ticks span:last-child{transform:translateX(-100%)}
+.cells{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.cell{background:var(--soft);border-radius:14px;padding:12px 14px}
+.cell.w{grid-column:1/-1}
+.cell small{display:block;color:var(--muted);font-size:.8rem}
+.cell strong{font-size:1.2rem;color:var(--brand)}
+.cell p{margin:6px 0 0;font-size:.88rem}
+#wall{display:block;width:100%;height:auto;border-radius:14px}
+dialog{width:min(1100px,94vw);border:0;border-radius:20px;padding:18px;background:var(--card);color:var(--text)}
+dialog::backdrop{background:rgba(10,8,30,.65)}
+.dh{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dh h2{margin:0}
+#icv{display:block;width:100%;height:62vh;border-radius:12px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:90vw;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9}
+#toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header class="hero"><h1>Poster print checker</h1><p>Add a batch of images, frame each one on its paper size by dragging and zooming, check the print quality, then download 300 DPI files. Everything stays in your browser.</p></header>
+<div class="layout">
+<div class="side">
+  <section class="card up">
+    <h2><i><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg></i>Add images</h2>
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose images to add">
+      <svg viewBox="0 0 24 24"><path d="M12 16V5m0 0-4 4m4-4 4 4"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+      <b>Drop images here</b><span>or click to choose PNG, JPG or WEBP files. Pick as many as you like.</span>
+    </div>
+    <input type="file" id="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+    <p class="err" id="err" role="alert"></p>
+  </section>
+  <section class="card qa">
+    <h2><i><svg viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></i>To adjust <span class="tag ct" id="ca">0</span></h2>
+    <div class="list" id="qa"></div>
+    <p class="note" id="qae" style="margin:0">Nothing waiting. Add images above.</p>
+  </section>
+  <section class="card qr">
+    <h2><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></i>Adjusted &amp; ready <span class="tag ct" id="cr">0</span></h2>
+    <div class="gal" id="qr"></div>
+    <p class="note" id="qre" style="margin:0">Saved posters appear here.</p>
+    <button type="button" class="btn pri" id="zip" disabled style="width:100%;margin-top:12px">Download all (ZIP)</button>
+  </section>
+</div>
+<div class="work">
+  <section class="card ed">
+    <h2><i><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3 9 6m3-3 3 3M12 21l-3-3m3 3 3-3M3 12l3-3m-3 3 3 3M21 12l-3-3m3 3-3 3"/></svg></i>Editor</h2>
+    <div class="bar2">
+      <div><label for="size">Paper size</label>
+      <select id="size"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option><option value="A0">A0</option></select></div>
+      <div class="seg" id="orient" role="group" aria-label="Orientation">
+        <button type="button" data-o="portrait" aria-pressed="true">Portrait</button>
+        <button type="button" data-o="landscape" aria-pressed="false">Landscape</button>
+      </div>
+    </div>
+    <div class="stage" id="stage"><canvas id="cv" aria-label="Poster canvas. Drag to move the image, scroll or pinch to zoom."></canvas></div>
+    <p class="note">Drag the image to frame it. Scroll, pinch or use the slider to zoom.</p>
+    <div class="tools">
+      <label for="zm">Zoom</label><input id="zm" type="range" min=".2" max="6" step=".01" value="1" disabled>
+      <button type="button" class="btn" data-fit="width">Fit width</button><button type="button" class="btn" data-fit="height">Fit height</button><button type="button" class="btn" data-fit="bleed">Fill bleed</button>
+    </div>
+    <div class="acts">
+      <button type="button" class="btn" id="insb" disabled>Inspect 100% print view</button>
+      <button type="button" class="btn pri" id="save" disabled>Save &amp; move to ready</button>
+    </div>
+  </section>
+  <section class="card vd">
+    <h2><i><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4-5"/></svg></i>Print verdict</h2>
+    <p class="empty" id="empty">Add images to see how they will print at this size.</p>
+    <div id="out" hidden>
+      <div class="hd"><img id="thumb" alt="Selected image"><div><b id="fname"></b><div class="px" id="res"></div></div></div>
+      <div class="status" id="status">
+        <span class="ico" id="icon"></span>
+        <div class="txt"><div class="tier" id="tier"></div><div class="msg" id="msg"></div></div>
+        <div class="dpi"><span id="bigdpi"></span><small>DPI as framed</small></div>
+      </div>
+      <div class="gauge" aria-hidden="true">
+        <div class="bar"></div><div class="pin" id="pin"></div>
+        <div class="ticks"><span style="left:0">0</span><span style="left:33.33%">150</span><span style="left:66.66%">300</span><span style="left:100%">450+</span></div>
+      </div>
+      <div class="cells">
+        <div class="cell"><small>Width and height DPI</small><strong id="dd"></strong></div>
+        <div class="cell"><small>Image size on poster</small><strong id="sz"></strong></div>
+        <div class="cell w"><small>Coverage <span class="tag" id="pill"></span></small><p id="cov"></p></div>
+        <div class="cell w"><small>Image pixels needed for 300 DPI as framed</small><strong id="need"></strong></div>
+      </div>
+    </div>
+  </section>
+  <section class="card wl">
+    <h2><i><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></i>Wall preview</h2>
+    <canvas id="wall" width="800" height="520" role="img" aria-label="The framed poster at true scale on a wall beside a sofa and a 170 cm tall person"></canvas>
+  </section>
+</div>
+</div>
+</main>
+<dialog id="insp" aria-label="100% print view">
+  <div class="dh"><h2>Inspect 100% print view</h2><button type="button" class="btn" id="iclose">Close</button></div>
+  <p class="note" id="iinfo" style="margin:0 0 10px"></p>
+  <canvas id="icv"></canvas>
+</dialog>
+<div id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+// Physical sizes in inches (width x height, portrait)
+const SIZES = {A4:[8.27,11.69], A3:[11.69,16.54], A2:[16.54,23.39], A1:[23.39,33.11], A0:[33.11,46.81]};
+const BLEED = .125; // inches added on every side by "Fill bleed"
+const ico = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const TIERS = {
+  ok:   {name:"Optimal",    msg:"Crisp, professional gallery quality.", icon:ico('<circle cx="12" cy="12" r="10"/><path d="m7.8 12.4 3 3 5.6-6.2"/>')},
+  warn: {name:"Acceptable", msg:"Good quality for normal wall viewing distances.", icon:ico('<path d="M12 3.2 2.4 20h19.2L12 3.2Z"/><path d="M12 9.8v4.4M12 17.2v.1"/>')},
+  bad:  {name:"Poor",       msg:"Image will appear pixelated or blurry up close.", icon:ico('<circle cx="12" cy="12" r="10"/><path d="m8.8 8.8 6.4 6.4M15.2 8.8l-6.4 6.4"/>')}
+};
+CanvasRenderingContext2D.prototype.roundRect || (CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h){ this.rect(x, y, w, h); });
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cl = x => Math.min(Math.max(x, 0), 1);
+
+// Each item: {id,name,file,w,h,th,pv,size,orient,done,v,z:{f,cx,cy}}
+// z.f = image width as a fraction of poster width; cx, cy = image centre as a fraction of poster width and height
+const def = {size:"A3", orient:"portrait"};
+let items = [], cur = null, uid = 0, busy = false, I = null, tmr, tt;
+const F = () => cur || def;
+const dim = o => { const [w, h] = SIZES[o.size]; return o.orient === "portrait" ? [w, h] : [h, w]; };
+const base = it => { const [pw, ph] = dim(it); return Math.max(1, (it.w / it.h) / (pw / ph)); }; // zoom 1 = image just fills the sheet
+
+function fit(it, m){
+  const [pw, ph] = dim(it), ir = it.w / it.h, b = BLEED * 2;
+  it.z = {f: m === "width" ? 1 : m === "height" ? ph * ir / pw : Math.max((pw + b) / pw, (ph + b) * ir / pw), cx: .5, cy: .5};
+}
+// DPI is judged on the rounded value so the number shown always matches the verdict
+function calc(it){
+  const [pw, ph] = dim(it), {f, cx, cy} = it.z, d = it.w / (f * pw), low = Math.round(d), hf = f * (pw / ph) / (it.w / it.h), e = .002;
+  return {pw, ph, d, low, k: low >= 300 ? "ok" : low >= 150 ? "warn" : "bad", wi: f * pw, hi: f * pw * it.h / it.w,
+    cov: cx - f/2 <= e && cx + f/2 >= 1 - e && cy - hf/2 <= e && cy + hf/2 >= 1 - e};
+}
+function setF(nf, u = .5, v = .5){
+  const z = cur.z, b = base(cur); nf = Math.min(Math.max(nf, b * .2), b * 6);
+  const r = nf / z.f; z.cx = cl(u - (u - z.cx) * r); z.cy = cl(v - (v - z.cy) * r); z.f = nf;
+}
+
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 3500); }
+const deb = () => { clearTimeout(tmr); tmr = setTimeout(lists, 180); };
+
+// ---------- rendering ----------
+function layout(){
+  const [pw, ph] = dim(F()), pr = pw / ph, dpr = devicePixelRatio || 1, c = $("cv");
+  const cw = Math.max(120, Math.min($("stage").clientWidth - 28, innerHeight * .62 * pr)), ch = cw / pr;
+  c.style.width = cw + "px"; c.style.height = ch + "px"; c.width = Math.round(cw * dpr); c.height = Math.round(ch * dpr);
+}
+function draw(){
+  const c = $("cv"), g = c.getContext("2d"), W = c.width, H = c.height;
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  if (cur){
+    const z = cur.z, w = z.f * W, h = w * cur.h / cur.w;
+    g.imageSmoothingQuality = "high"; g.drawImage(cur.pv, z.cx * W - w / 2, z.cy * H - h / 2, w, h);
+  } else {
+    g.fillStyle = "#8b87b0"; g.font = `600 ${W / 16}px system-ui,sans-serif`; g.textAlign = "center"; g.fillText("Add images to start", W / 2, H / 2);
+  }
+  wall();
+}
+function wall(){
+  const c = $("wall"), g = c.getContext("2d"), s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim(), k = c.width / 400;
+  const R = (col, x, y, w, h, r) => { g.fillStyle = col; g.beginPath(); g.roundRect(x, y, w, h, r || 0); g.fill(); };
+  g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, 400, 260);
+  R(v("--wall"), 0, 0, 400, 240); R(v("--floor"), 0, 240, 400, 20);
+  R(v("--sofa2"), 62, 155, 176, 60, 10); R(v("--sofa"), 70, 190, 160, 36, 8); R(v("--sofa"), 52, 172, 24, 58, 9); R(v("--sofa"), 224, 172, 24, 58, 9);
+  const [pw, ph] = dim(F()), W = pw * 2.54, H = ph * 2.54, x = 150 - W / 2, y = 90 - H / 2; // scene units are centimetres
+  g.save(); g.shadowColor = "rgba(0,0,0,.35)"; g.shadowBlur = 10; g.shadowOffsetY = 3;
+  if (cur) g.drawImage($("cv"), x, y, W, H);
+  else { const q = g.createLinearGradient(x, y, x + W, y + H); q.addColorStop(0, "#5b4bff"); q.addColorStop(.6, "#b14bff"); q.addColorStop(1, "#ff4fa3"); g.fillStyle = q; g.fillRect(x, y, W, H); }
+  g.restore();
+  const pe = v("--pe"); R(pe, 298, 95, 24, 68, 11); R(pe, 291, 97, 8, 60, 4); R(pe, 321, 97, 8, 60, 4); R(pe, 299, 158, 9, 82, 4); R(pe, 311, 158, 9, 82, 4);
+  g.fillStyle = pe; g.beginPath(); g.arc(310, 81, 11, 0, 7); g.fill();
+  g.fillStyle = v("--muted"); g.font = "600 8px system-ui,sans-serif"; g.textAlign = "center";
+  g.fillText(`${Math.round(pw*25.4)} × ${Math.round(ph*25.4)} mm`, 150, y - 5); g.fillText("170 cm", 310, 62);
+}
+function verdict(){
+  $("empty").hidden = !!cur; $("out").hidden = !cur; if (!cur) return;
+  const c = calc(cur), t = TIERS[c.k];
+  $("thumb").src = cur.th; $("fname").textContent = cur.name; $("res").textContent = `${cur.w} × ${cur.h} px`;
+  $("status").className = "status " + c.k; $("icon").innerHTML = t.icon; $("tier").textContent = t.name; $("msg").textContent = t.msg;
+  $("bigdpi").textContent = c.low; $("pin").style.left = Math.min(c.low, 450) / 450 * 100 + "%";
+  $("dd").textContent = c.d.toFixed(1); $("sz").textContent = `${c.wi.toFixed(1)} × ${c.hi.toFixed(1)} in`;
+  $("need").textContent = `${Math.round(c.wi * 300)} × ${Math.round(c.hi * 300)} px`;
+  const p = $("pill"); p.textContent = c.cov ? "Covers the sheet" : "White edges"; p.className = "tag " + (c.cov ? "ok" : "warn");
+  $("cov").textContent = c.cov ? "The image fills the sheet edge to edge." : "Part of the sheet is not covered, so white bars will print. Use Fill bleed or zoom in.";
+}
+function snap(it){ // poster-shaped thumbnail of the adjusted layout
+  const [pw, ph] = dim(it), c = document.createElement("canvas"), W = c.width = 220, H = c.height = Math.round(220 * ph / pw), g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  const z = it.z, w = z.f * W, h = w * it.h / it.w; g.imageSmoothingQuality = "high"; g.drawImage(it.pv, z.cx * W - w / 2, z.cy * H - h / 2, w, h);
+  return c.toDataURL("image/jpeg", .8);
+}
+function lists(){
+  const A = items.filter(i => !i.done), R = items.filter(i => i.done);
+  $("ca").textContent = A.length; $("cr").textContent = R.length; $("qae").hidden = !!A.length; $("qre").hidden = !!R.length; $("zip").disabled = !R.length || busy;
+  $("qa").innerHTML = A.map(i => { const c = calc(i);
+    return `<div class="row${i === cur ? " on" : ""}" data-id="${i.id}"><button type="button" class="rowb"><img src="${i.th}" alt=""><span><b>${esc(i.name)}</b><small>${i.w} × ${i.h} px, ${i.size} ${i.orient}</small></span><span class="tag ${c.k}">${c.low}</span></button><button type="button" class="rm" aria-label="Remove ${esc(i.name)}">×</button></div>`; }).join("");
+  $("qr").innerHTML = R.map(i => { if (i.rtv !== i.v){ i.rt = snap(i); i.rtv = i.v; } const c = calc(i);
+    return `<div class="tile${i === cur ? " on" : ""}" data-id="${i.id}"><button type="button" class="pick" aria-label="Edit ${esc(i.name)}"><img src="${i.rt}" alt=""><b class="cap">${esc(i.name)}</b><small>${i.size} ${i.orient}, ${c.low} DPI</small></button><button type="button" class="rm" aria-label="Remove ${esc(i.name)}">×</button><button type="button" class="btn dl pri">Download 300 DPI File</button></div>`; }).join("");
+}
+function sync(){
+  const o = F(); $("size").value = o.size;
+  $("orient").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.o === o.orient));
+  $("zm").disabled = !cur; if (cur) $("zm").value = (cur.z.f / base(cur)).toFixed(2);
+  const s = $("save"); s.disabled = !cur; s.textContent = cur && cur.done ? "Save changes" : "Save & move to ready";
+  $("insb").disabled = !cur; document.querySelectorAll("[data-fit]").forEach(b => b.disabled = !cur);
+}
+const zsync = () => { $("zm").value = (cur.z.f / base(cur)).toFixed(2); };
+const live = () => { draw(); verdict(); };
+function refresh(){ layout(); sync(); draw(); verdict(); lists(); }
+function pick(it){ cur = it || null; refresh(); }
+
+// ---------- loading ----------
+async function readImg(f){
+  if (!/^image\/(png|jpe?g|webp)$/i.test(f.type) && !/\.(png|jpe?g|webp)$/i.test(f.name)) throw Error(`${f.name} is not a PNG, JPG or WEBP file`);
+  let b; try { b = await createImageBitmap(f); } catch { throw Error(`${f.name} could not be decoded`); }
+  const w = b.width, h = b.height;
+  const mk = m => { const k = Math.min(1, m / Math.max(w, h)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingQuality = "high"; g.drawImage(b, 0, 0, c.width, c.height); return c; };
+  const pv = mk(1200), th = mk(200).toDataURL("image/jpeg", .85); b.close(); // originals are re-read from the file only for inspect and export
+  const it = {id: ++uid, name: f.name, file: f, w, h, th, pv, size: $("size").value, orient: w >= h ? "landscape" : "portrait", done: false, v: 0};
+  fit(it, "bleed"); return it;
+}
+async function addFiles(list){
+  const fs = [...list], errs = []; if (!fs.length) return; $("err").textContent = "";
+  for (const f of fs){ try { const it = await readImg(f); items.push(it); cur ? lists() : pick(it); } catch (e){ errs.push(e.message); } }
+  $("err").textContent = errs.join("; ");
+}
+
+// ---------- export ----------
+const fname = (it, n) => `${n ? String(n).padStart(2, "0") + "_" : ""}${it.name.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "_")}_${it.size}_${it.orient}_300dpi.jpg`;
+async function exportJpg(it){
+  const [pw, ph] = dim(it), PW = Math.round(pw * 300), PH = Math.round(ph * 300), c = document.createElement("canvas");
+  c.width = PW; c.height = PH;
+  const g = c.getContext("2d"), tooBig = () => Error(`${it.size} at 300 DPI is too large for this browser. Try a smaller paper size.`);
+  if (!g) throw tooBig();
+  g.fillStyle = "#fff"; g.fillRect(0, 0, PW, PH);
+  const bmp = await createImageBitmap(it.file), Wd = it.z.f * PW, Hd = Wd * it.h / it.w;
+  g.imageSmoothingQuality = "high"; g.drawImage(bmp, it.z.cx * PW - Wd / 2, it.z.cy * PH - Hd / 2, Wd, Hd); bmp.close();
+  const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .95)); c.width = c.height = 0;
+  if (!blob) throw tooBig();
+  const u = new Uint8Array(await blob.arrayBuffer());
+  if (u[2] === 0xFF && u[3] === 0xE0 && u[6] === 0x4A){ u[13] = 1; u[14] = 1; u[15] = 44; u[16] = 1; u[17] = 44; } // JFIF density: 300 dpi
+  return new Blob([u], {type: "image/jpeg"});
+}
+async function saveFile(name, blob){
+  if (window.claude){
+    const d = await claude.use("downloads"); if (!d){ toast("Downloads are not available in this view."); return; }
+    try { await d.save({filename: name, data: blob}); toast("Saved " + name); }
+    catch (e){ toast(e.code === "declined" ? "Download cancelled." : "Could not save: " + (e.message || e.code)); }
+  } else { // opened as a plain file outside the viewer
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+}
+async function dlOne(it){
+  if (busy) return; busy = true; lists(); toast("Rendering 300 DPI file…");
+  try { await saveFile(fname(it), await exportJpg(it)); } catch (e){ toast(e.message || "Export failed"); }
+  busy = false; lists();
+}
+$("zip").onclick = async () => {
+  const R = items.filter(i => i.done); if (!R.length || busy) return;
+  if (!window.JSZip){ toast("The ZIP library did not load. Check your connection and reload."); return; }
+  busy = true; $("zip").disabled = true;
+  try {
+    const z = new JSZip();
+    for (let i = 0; i < R.length; i++){ toast(`Rendering ${i + 1} of ${R.length}…`); z.file(fname(R[i], i + 1), await exportJpg(R[i])); }
+    toast("Packing ZIP…");
+    await saveFile("posters-300dpi.zip", await z.generateAsync({type: "blob", compression: "STORE"}));
+  } catch (e){ toast(e.message || "Export failed"); }
+  busy = false; lists();
+};
+
+// ---------- 100% inspect ----------
+function idraw(){
+  if (!I) return;
+  const c = $("icv"), g = c.getContext("2d"), {PW, PH, Wd, Hd, L, T, ox, oy, it} = I, vw = c.width, vh = c.height;
+  g.fillStyle = "#cfcde0"; g.fillRect(0, 0, vw, vh);
+  g.save(); g.beginPath(); g.rect(-ox, -oy, PW, PH); g.clip(); g.fillStyle = "#fff"; g.fillRect(-ox, -oy, PW, PH);
+  const x0 = Math.max(ox, L), y0 = Math.max(oy, T), x1 = Math.min(ox + vw, L + Wd), y1 = Math.min(oy + vh, T + Hd);
+  if (x1 > x0 && y1 > y0){ const k = it.w / Wd; g.imageSmoothingQuality = "high"; g.drawImage(I.bmp, (x0 - L) * k, (y0 - T) * k, (x1 - x0) * k, (y1 - y0) * k, x0 - ox, y0 - oy, x1 - x0, y1 - y0); }
+  g.restore(); g.strokeStyle = "#ff4fa3"; g.lineWidth = 2; g.setLineDash([10, 8]); g.strokeRect(-ox, -oy, PW, PH);
+}
+$("insb").onclick = async () => {
+  if (!cur) return;
+  const it = cur, [pw, ph] = dim(it), PW = Math.round(pw * 300), PH = Math.round(ph * 300), dlg = $("insp");
+  dlg.showModal(); $("iinfo").textContent = "Decoding the original image…";
+  let bmp; try { bmp = await createImageBitmap(it.file); } catch { $("iinfo").textContent = "The original image could not be decoded."; return; }
+  if (!dlg.open){ bmp.close(); return; }
+  const c = $("icv"), dpr = devicePixelRatio || 1; c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr);
+  const z = it.z, Wd = z.f * PW, Hd = Wd * it.h / it.w, s = Wd / it.w;
+  I = {it, bmp, PW, PH, Wd, Hd, L: z.cx * PW - Wd / 2, T: z.cy * PH - Hd / 2, ox: PW / 2 - c.width / 2, oy: PH / 2 - c.height / 2};
+  $("iinfo").textContent = `Actual print pixels: ${PW} × ${PH} px (${it.size} ${it.orient} at 300 DPI), one screen pixel per print pixel. The image is ${s >= 1 ? "stretched to" : "scaled down to"} ${Math.round(s * 100)}% of its original pixels, which is ${calc(it).low} DPI. Drag to pan.`;
+  idraw();
+};
+$("iclose").onclick = () => $("insp").close();
+$("insp").onclose = () => { if (I){ I.bmp.close(); I = null; } };
+let pan = null;
+$("icv").onpointerdown = e => { $("icv").setPointerCapture(e.pointerId); pan = {x: e.clientX, y: e.clientY}; };
+$("icv").onpointermove = e => {
+  if (!pan || !I) return; const dpr = devicePixelRatio || 1, c = $("icv");
+  I.ox = Math.min(Math.max(I.ox - (e.clientX - pan.x) * dpr, -c.width / 2), I.PW - c.width / 2);
+  I.oy = Math.min(Math.max(I.oy - (e.clientY - pan.y) * dpr, -c.height / 2), I.PH - c.height / 2);
+  pan = {x: e.clientX, y: e.clientY}; idraw();
+};
+$("icv").onpointerup = $("icv").onpointercancel = () => { pan = null; };
+
+// ---------- editor interaction ----------
+const cv = $("cv"), P = new Map();
+cv.onpointerdown = e => { if (!cur) return; cv.setPointerCapture(e.pointerId); P.set(e.pointerId, {x: e.clientX, y: e.clientY}); };
+cv.onpointermove = e => {
+  const p = P.get(e.pointerId); if (!p || !cur) return;
+  const r = cv.getBoundingClientRect(), z = cur.z;
+  if (P.size === 1){ z.cx = cl(z.cx + (e.clientX - p.x) / r.width); z.cy = cl(z.cy + (e.clientY - p.y) / r.height); }
+  else if (P.size === 2){ // pinch: zoom about the midpoint of the two fingers
+    const o = [...P.entries()].find(([id]) => id !== e.pointerId)[1], d0 = Math.hypot(p.x - o.x, p.y - o.y), d1 = Math.hypot(e.clientX - o.x, e.clientY - o.y);
+    if (d0 > 0) setF(z.f * d1 / d0, ((e.clientX + o.x) / 2 - r.left) / r.width, ((e.clientY + o.y) / 2 - r.top) / r.height);
+  }
+  p.x = e.clientX; p.y = e.clientY; cur.v++; zsync(); live();
+};
+cv.onpointerup = cv.onpointercancel = e => { P.delete(e.pointerId); deb(); };
+cv.addEventListener("wheel", e => {
+  if (!cur) return; e.preventDefault(); const r = cv.getBoundingClientRect();
+  setF(cur.z.f * Math.exp(-e.deltaY * .0015), (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height); cur.v++; zsync(); live(); deb();
+}, {passive: false});
+$("zm").oninput = () => { if (!cur) return; setF(base(cur) * $("zm").value); cur.v++; live(); deb(); };
+document.querySelectorAll("[data-fit]").forEach(b => b.onclick = () => { if (!cur) return; fit(cur, b.dataset.fit); cur.v++; zsync(); live(); lists(); });
+$("size").onchange = () => { const o = F(); o.size = $("size").value; if (cur) cur.v++; refresh(); };
+$("orient").querySelectorAll("button").forEach(b => b.onclick = () => {
+  const o = F(); if (o.orient === b.dataset.o) return; o.orient = b.dataset.o;
+  if (cur){ fit(cur, "bleed"); cur.v++; } refresh();
+});
+$("save").onclick = () => {
+  if (!cur) return; const was = cur.done; cur.done = true; cur.v++;
+  const nx = items.find(i => !i.done); toast(was ? "Changes saved." : nx ? "Saved. Next image loaded." : "Saved. Every image is adjusted.");
+  pick(nx || cur);
+};
+function listClick(e){
+  const el = e.target.closest("[data-id]"); if (!el) return; const it = items.find(i => i.id == el.dataset.id); if (!it) return;
+  if (e.target.closest(".rm")){ items.splice(items.indexOf(it), 1); if (cur === it) pick(items.find(i => !i.done) || items[0]); else lists(); }
+  else if (e.target.closest(".dl")) dlOne(it);
+  else pick(it);
+}
+$("qa").onclick = $("qr").onclick = listClick;
+
+// ---------- upload zone ----------
+const drop = $("drop"), file = $("file");
+drop.onclick = () => file.click();
+drop.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); file.click(); } };
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+file.onchange = () => { addFiles(file.files); file.value = ""; };
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => e.preventDefault());
+window.addEventListener("resize", () => { layout(); draw(); });
+refresh();
+</script>
+</body>
+</html>

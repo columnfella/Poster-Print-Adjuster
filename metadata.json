@@ -1,0 +1,6 @@
+{
+  "name": "Poster Print Checker & Studio",
+  "description": "Professional client-side poster print optimizer, framing editor, 300 DPI verdict, wall visualizer, and archival export studio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
