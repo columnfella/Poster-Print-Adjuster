@@ -219,7 +219,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-1.5 bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md cursor-pointer transition-all"
+            className="flex items-center space-x-1.5 bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md cursor-pointer transition"
             title="Upload photo from phone or files"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
@@ -230,7 +230,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
           <button
             type="button"
             onClick={onOpenSampleModal}
-            className={`p-2 rounded-xl border text-xs font-medium transition-all active:scale-95 ${
+            className={`p-2 rounded-xl border text-xs font-medium transition active:scale-95 ${
               isLight
                 ? 'bg-[#F8FAFC] hover:bg-slate-100 border-[#E2E8F0] text-slate-700'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8]'
@@ -244,7 +244,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
           <button
             type="button"
             onClick={onToggleTheme}
-            className={`p-2 rounded-xl border transition-all active:scale-95 ${
+            className={`p-2 rounded-xl border transition active:scale-95 ${
               isLight
                 ? 'bg-[#F8FAFC] border-[#E2E8F0] text-slate-700'
                 : 'bg-[#21262D] border-[#30363D] text-amber-400'
@@ -294,7 +294,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
           {items.length === 0 ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className={`flex-1 py-3 px-4 rounded-xl border border-dashed flex items-center justify-center space-x-2 cursor-pointer transition-all ${
+              className={`flex-1 py-3 px-4 rounded-xl border border-dashed flex items-center justify-center space-x-2 cursor-pointer transition ${
                 isLight
                   ? 'bg-white border-blue-300 text-blue-600'
                   : 'bg-[#16191E] border-blue-500/40 text-blue-400'
@@ -317,7 +317,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                   <div
                     key={item.id}
                     onClick={() => onSelectItem(item)}
-                    className={`relative shrink-0 w-28 p-1.5 rounded-xl border transition-all cursor-pointer flex flex-col items-center ${
+                    className={`relative shrink-0 w-28 p-1.5 rounded-xl border transition cursor-pointer flex flex-col items-center ${
                       isSelected
                         ? isLight
                           ? 'bg-white border-[#2563EB] ring-2 ring-[#2563EB]/25 shadow-md'
@@ -378,7 +378,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
               {/* Add More Card at end of carousel */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`shrink-0 w-20 h-26 rounded-xl border border-dashed flex flex-col items-center justify-center space-y-1 cursor-pointer transition-all active:scale-95 ${
+                className={`shrink-0 w-20 h-26 rounded-xl border border-dashed flex flex-col items-center justify-center space-y-1 cursor-pointer transition active:scale-95 ${
                   isLight
                     ? 'border-blue-300 hover:bg-blue-50/50 text-blue-600'
                     : 'border-blue-500/40 hover:bg-blue-500/10 text-blue-400'
@@ -433,7 +433,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsPaperSheetOpen(true)}
-                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs active:scale-98 transition-all cursor-pointer ${
+                    className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-semibold shadow-xs active:scale-98 transition cursor-pointer ${
                       isLight
                         ? 'bg-slate-50 border-slate-200 text-slate-800'
                         : 'bg-[#21262D] border-[#30363D] text-slate-200'
@@ -453,7 +453,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                   <button
                     type="button"
                     onClick={onOpenUpscaler}
-                    className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-indigo-500/15 hover:from-amber-500/25 border border-amber-500/40 text-amber-600 dark:text-amber-400 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
+                    className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-indigo-500/15 hover:from-amber-500/25 border border-amber-500/40 text-amber-600 dark:text-amber-400 px-3 py-2 rounded-xl text-xs font-bold transition active:scale-95 shadow-xs cursor-pointer shrink-0"
                   >
                     <Wand2 className="w-3.5 h-3.5 text-amber-500" />
                     <span>Upscale</span>
@@ -464,7 +464,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                     type="button"
                     onClick={() => onExportSingle(currentItem)}
                     disabled={isExporting}
-                    className="flex items-center space-x-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+                    className="flex items-center space-x-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs active:scale-95 transition cursor-pointer shrink-0"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Export</span>
@@ -524,7 +524,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                       type="button"
                       onClick={onUndo}
                       disabled={!canUndo}
-                      className={`p-2 rounded-xl border transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                      className={`p-2 rounded-xl border transition active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                         isLight
                           ? 'bg-slate-50 border-slate-200 text-slate-700'
                           : 'bg-[#21262D] border-[#30363D] text-slate-300'
@@ -537,7 +537,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                       type="button"
                       onClick={onRedo}
                       disabled={!canRedo}
-                      className={`p-2 rounded-xl border transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                      className={`p-2 rounded-xl border transition active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                         isLight
                           ? 'bg-slate-50 border-slate-200 text-slate-700'
                           : 'bg-[#21262D] border-[#30363D] text-slate-300'
@@ -551,7 +551,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                     <button
                       type="button"
                       onClick={onSaveToReady}
-                      className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold shadow-xs active:scale-95 transition-all cursor-pointer ${
+                      className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold shadow-xs active:scale-95 transition cursor-pointer ${
                         currentItem.isSavedToReady
                           ? 'bg-[#10B981] text-white'
                           : isLight
@@ -613,7 +613,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                 type="button"
                 onClick={onBatchZipExport}
                 disabled={readyCount === 0 || isExporting}
-                className="w-full flex items-center justify-center space-x-2 bg-[#10B981] hover:bg-[#059669] disabled:opacity-40 text-white font-bold text-xs py-2.5 rounded-xl shadow-md cursor-pointer transition-all active:scale-98"
+                className="w-full flex items-center justify-center space-x-2 bg-[#10B981] hover:bg-[#059669] disabled:opacity-40 text-white font-bold text-xs py-2.5 rounded-xl shadow-md cursor-pointer transition active:scale-98"
               >
                 <Archive className="w-4 h-4" />
                 <span>Download All {readyCount} Posters in ZIP</span>
@@ -632,7 +632,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                     onSelectItem(item);
                     setMobileTab('editor');
                   }}
-                  className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                  className={`p-3 rounded-xl border flex items-center justify-between transition cursor-pointer ${
                     item.id === currentId
                       ? isLight
                         ? 'bg-blue-50/50 border-[#2563EB]'
@@ -711,7 +711,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
         <button
           type="button"
           onClick={() => setMobileTab('editor')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition cursor-pointer ${
             mobileTab === 'editor'
               ? 'text-[#2563EB] dark:text-[#38bdf8] font-bold'
               : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
@@ -725,7 +725,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
         <button
           type="button"
           onClick={() => setMobileTab('verdict')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all cursor-pointer relative ${
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition cursor-pointer relative ${
             mobileTab === 'verdict'
               ? 'text-emerald-600 dark:text-emerald-400 font-bold'
               : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
@@ -752,7 +752,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
         <button
           type="button"
           onClick={() => setMobileTab('wall')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition cursor-pointer ${
             mobileTab === 'wall'
               ? 'text-purple-600 dark:text-purple-400 font-bold'
               : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
@@ -766,7 +766,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
         <button
           type="button"
           onClick={() => setMobileTab('batch')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all cursor-pointer relative ${
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition cursor-pointer relative ${
             mobileTab === 'batch'
               ? 'text-[#2563EB] dark:text-[#38bdf8] font-bold'
               : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
@@ -788,7 +788,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
       {isPaperSheetOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/60 transition-opacity"
             onClick={() => setIsPaperSheetOpen(false)}
           />
 
@@ -824,7 +824,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOrientationToggle('portrait')}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${
+                  className={`py-2 rounded-lg text-xs font-bold transition ${
                     currentItem?.orientation === 'portrait'
                       ? 'bg-[#2563EB] text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
@@ -835,7 +835,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOrientationToggle('landscape')}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${
+                  className={`py-2 rounded-lg text-xs font-bold transition ${
                     currentItem?.orientation === 'landscape'
                       ? 'bg-[#2563EB] text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
@@ -862,7 +862,7 @@ export const MobileStudioLayout: React.FC<MobileStudioLayoutProps> = ({
                         handlePaperSizeChange(opt.id);
                         setIsPaperSheetOpen(false);
                       }}
-                      className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                      className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition cursor-pointer ${
                         isCurrent
                           ? isLight
                             ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'

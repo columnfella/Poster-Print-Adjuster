@@ -57,7 +57,7 @@ export const SecuritySandboxModal: React.FC<SecuritySandboxModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 select-none font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 select-none font-sans">
       <div className="bg-[#1e1e1e] border border-[#333333] rounded-xl w-full max-w-2xl flex flex-col shadow-2xl overflow-hidden text-[#cccccc]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 bg-[#252526] border-b border-[#333333]">

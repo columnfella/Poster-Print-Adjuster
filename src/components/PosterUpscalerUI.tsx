@@ -379,13 +379,13 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
   return (
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 sm:p-5 select-none font-sans transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-5 select-none font-sans transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-3xl flex flex-col rounded-2xl border shadow-2xl overflow-hidden max-h-[92vh] transition-all duration-300 ease-out transform ${
+        className={`w-full max-w-3xl flex flex-col rounded-2xl border shadow-2xl overflow-hidden max-h-[92vh] transition duration-300 ease-out transform ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-3'
         } ${
           isLight
@@ -424,7 +424,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
 
           <button
             onClick={handleClose}
-            className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
                 ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -524,7 +524,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                       setCompletedResult(null);
                       setCloudError(null);
                     }}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all disabled:cursor-not-allowed ${
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition disabled:cursor-not-allowed ${
                       active
                         ? isLight
                           ? 'bg-blue-50/80 border-[#2563EB] ring-2 ring-[#2563EB]/30'
@@ -620,7 +620,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                         setAiModel(m.id);
                         setCompletedResult(null);
                       }}
-                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all disabled:cursor-not-allowed ${
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition disabled:cursor-not-allowed ${
                         active
                           ? isLight
                             ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/30'
@@ -681,7 +681,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                     key={p.id}
                     type="button"
                     onClick={() => handleSelectPreset(p.id)}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between relative ${
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between relative ${
                       isSelected
                         ? isLight
                           ? 'bg-blue-50/80 border-[#2563EB] ring-2 ring-[#2563EB]/30 shadow-xs'
@@ -741,7 +741,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
               {/* Smaller, compact Manual Tuning card in grid or inline */}
               <div
                 onClick={() => handleSelectPreset('custom')}
-                className={`p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between ${
                   isManualActive
                     ? isLight
                       ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-400/30 shadow-xs'
@@ -850,7 +850,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   setScaleMode('target300');
                   setCompletedResult(null);
                 }}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   scaleMode === 'target300'
                     ? isLight
                       ? 'bg-blue-50/80 border-[#2563EB] text-[#2563EB] font-bold shadow-xs'
@@ -872,7 +872,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   setScaleMode('2x');
                   setCompletedResult(null);
                 }}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   scaleMode === '2x'
                     ? isLight
                       ? 'bg-blue-50/80 border-[#2563EB] text-[#2563EB] font-bold shadow-xs'
@@ -892,7 +892,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   setScaleMode('3x');
                   setCompletedResult(null);
                 }}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   scaleMode === '3x'
                     ? isLight
                       ? 'bg-blue-50/80 border-[#2563EB] text-[#2563EB] font-bold shadow-xs'
@@ -912,7 +912,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   setScaleMode('4x');
                   setCompletedResult(null);
                 }}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   scaleMode === '4x'
                     ? isLight
                       ? 'bg-blue-50/80 border-[#2563EB] text-[#2563EB] font-bold shadow-xs'
@@ -931,7 +931,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
           {/* Section 3: Fine-Tune Parameters (ONLY AND ONLY SHOWN IN THE MANUAL OPTION) */}
           {engine === 'local' && isManualActive && (
             <div
-              className={`p-4 rounded-xl border space-y-4 transition-all ${
+              className={`p-4 rounded-xl border space-y-4 transition ${
                 isLight
                   ? 'bg-amber-50/40 border-amber-200'
                   : 'bg-[#111317] border-[#262B33]'
@@ -1095,7 +1095,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 <button
                   type="button"
                   onClick={() => handleManualClampChange(!clampRinging)}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                     clampRinging
                       ? 'bg-emerald-600 text-white border-emerald-600'
                       : isLight
@@ -1112,7 +1112,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
           {/* Worker Execution Progress Bar */}
           {isProcessing && (
             <div
-              className={`p-4 rounded-xl border space-y-2.5 font-mono shadow-md animate-pulse ${
+              className={`p-4 rounded-xl border space-y-2.5 font-mono shadow-md ${
                 isLight
                   ? 'bg-blue-50/70 border-blue-300 text-slate-800'
                   : 'bg-[#111317] border-[#2563EB]/50'
@@ -1133,7 +1133,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 }`}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-[#2563EB] to-emerald-400 transition-all duration-200"
+                  className="h-full bg-gradient-to-r from-[#2563EB] to-emerald-400 transition-[width] duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -1173,7 +1173,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
               </div>
               <div className={`w-full h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-200' : 'bg-[#21262D]'}`}>
                 <div
-                  className={`h-full bg-gradient-to-r from-purple-500 to-[#2563EB] transition-all duration-300 ${
+                  className={`h-full bg-gradient-to-r from-purple-500 to-[#2563EB] transition-[width] duration-300 ${
                     cloudStatus.progress === undefined ? 'w-1/3 animate-pulse' : ''
                   }`}
                   style={cloudStatus.progress !== undefined ? { width: `${cloudStatus.progress}%` } : undefined}
@@ -1298,7 +1298,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 <button
                   type="button"
                   onClick={handleApplyToPoster}
-                  className="flex-1 bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold font-sans flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-md active:scale-98"
+                  className="flex-1 bg-[#2563EB] hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold font-sans flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-md active:scale-98"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Apply to Current Poster & Update Editor</span>
@@ -1355,7 +1355,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 type="button"
                 onClick={handleStartUpscaling}
                 disabled={isBusy || aiBlocked}
-                className="bg-gradient-to-r from-[#2563EB] to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40 text-white font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 text-xs shadow-sm active:scale-98"
+                className="bg-gradient-to-r from-[#2563EB] to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40 text-white font-semibold px-4 py-2 rounded-xl transition cursor-pointer flex items-center space-x-1.5 text-xs shadow-sm active:scale-98"
               >
                 <Wand2 className="w-3.5 h-3.5 text-amber-300" />
                 <span>

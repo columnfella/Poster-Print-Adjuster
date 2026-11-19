@@ -138,7 +138,7 @@ export const PrintVerdictPanel: React.FC<PrintVerdictPanelProps> = ({
 
           <button
             onClick={onOpenInspect}
-            className={`flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap shadow-xs ${
+            className={`flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl border transition cursor-pointer whitespace-nowrap shadow-xs ${
               isLight
                 ? 'bg-white hover:bg-slate-50 border-slate-300 text-[#0F172A]'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-white'
@@ -168,7 +168,7 @@ export const PrintVerdictPanel: React.FC<PrintVerdictPanelProps> = ({
           <div className="relative h-4 rounded-full bg-gradient-to-r from-[#EF4444] via-[#F59E0B] to-[#10B981] shadow-inner my-3.5">
             {/* Sliding Needle / Pin */}
             <div
-              className="absolute top-[-5px] w-3.5 h-6 bg-white rounded-md shadow-lg border border-slate-400 transition-all duration-300 flex items-center justify-center"
+              className="absolute top-[-5px] w-3.5 h-6 bg-white rounded-md shadow-lg border border-slate-400 transition duration-300 flex items-center justify-center"
               style={{ left: `calc(${gaugePercent}% - 7px)` }}
             >
               <div className="w-[2px] h-3.5 bg-[#2563EB] rounded-full"></div>

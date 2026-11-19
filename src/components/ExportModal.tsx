@@ -93,13 +93,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl border overflow-hidden transition-all duration-300 ease-out transform ${
+        className={`w-full max-w-xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl border overflow-hidden transition duration-300 ease-out transform ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-3'
         } ${
           isLight ? 'bg-white border-[#E2E8F0] text-[#0F172A]' : 'bg-[#16191E] border-[#262B33] text-[#F8FAFC]'
@@ -128,7 +128,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
                 ? 'bg-white hover:bg-slate-100 border-[#E2E8F0] text-slate-600'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -200,7 +200,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               return (
                 <div
                   key={it.id}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl border transition-all gap-3 ${
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl border transition gap-3 ${
                     isSelected
                       ? isLight
                         ? 'bg-blue-50/40 border-[#2563EB]/40 shadow-xs ring-1 ring-[#2563EB]/20'
@@ -265,7 +265,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       type="button"
                       onClick={() => handleSingleDownload(it)}
                       disabled={isExporting}
-                      className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap ${
+                      className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap ${
                         isLight
                           ? 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
                           : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
@@ -297,7 +297,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 onClose();
               }}
               disabled={isExporting || items.length === 0}
-              className={`text-xs px-3 py-2 rounded-xl border font-medium flex items-center space-x-1.5 transition-all cursor-pointer ${
+              className={`text-xs px-3 py-2 rounded-xl border font-medium flex items-center space-x-1.5 transition cursor-pointer ${
                 isLight
                   ? 'bg-white hover:bg-slate-100 border-[#E2E8F0] text-slate-700'
                   : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-slate-300'
@@ -315,7 +315,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               type="button"
               onClick={handleDownloadSelected}
               disabled={isExporting || selectedIds.length === 0}
-              className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-[#10B981] hover:bg-[#059669] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer whitespace-nowrap"
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-[#10B981] hover:bg-[#059669] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md cursor-pointer whitespace-nowrap"
             >
               <Download className="w-4 h-4 pointer-events-none" />
               <span>

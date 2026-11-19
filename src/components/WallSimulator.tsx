@@ -533,7 +533,7 @@ export const WallSimulator: React.FC<WallSimulatorProps> = ({ item, verdict, the
                   key={wc.name}
                   type="button"
                   onClick={() => setWallColor(wc.color)}
-                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full transition-all duration-300 cursor-pointer flex items-center justify-center relative shadow-xs ${
+                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full transition duration-300 cursor-pointer flex items-center justify-center relative shadow-xs ${
                     isSelected
                       ? 'ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-sm'
                       : 'hover:scale-105 opacity-85 hover:opacity-100 border border-black/10'
@@ -565,7 +565,7 @@ export const WallSimulator: React.FC<WallSimulatorProps> = ({ item, verdict, the
           <button
             type="button"
             onClick={() => setHasSpotlight(!hasSpotlight)}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200 cursor-pointer shadow-xs ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-medium transition duration-200 cursor-pointer shadow-xs ${
               hasSpotlight
                 ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold'
                 : isLightMode
@@ -580,7 +580,7 @@ export const WallSimulator: React.FC<WallSimulatorProps> = ({ item, verdict, the
           <button
             type="button"
             onClick={() => setShowRulerGuides(!showRulerGuides)}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200 cursor-pointer shadow-xs ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-medium transition duration-200 cursor-pointer shadow-xs ${
               showRulerGuides
                 ? 'bg-blue-500/10 border-blue-500/30 text-[#2563EB] dark:text-[#38bdf8] font-semibold'
                 : isLightMode
@@ -602,7 +602,7 @@ export const WallSimulator: React.FC<WallSimulatorProps> = ({ item, verdict, the
       >
         <canvas
           ref={canvasRef}
-          className="max-w-full max-h-full rounded-2xl shadow-xl border object-contain transition-all duration-300"
+          className="max-w-full max-h-full rounded-2xl shadow-xl border object-contain transition duration-300"
           style={{
             borderColor: isLightMode ? '#E2E8F0' : '#262B33',
           }}

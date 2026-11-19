@@ -78,7 +78,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   const [showBleedGuides, setShowBleedGuides] = useState<boolean>(true);
   const [showCropMarks, setShowCropMarks] = useState<boolean>(true);
   const [showCrosshairs, setShowCrosshairs] = useState<boolean>(false);
-  const [showTransformHandles, setShowTransformHandles] = useState<boolean>(true);
+  const [showTransformHandles, setShowTransformHandles] = useState<boolean>(false);
   const [canvasDisplaySize, setCanvasDisplaySize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isDragOverEmpty, setIsDragOverEmpty] = useState<boolean>(false);
@@ -683,7 +683,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 onClick={onUndo}
                 disabled={!canUndo}
                 title="Undo (Ctrl+Z / ⌘Z)"
-                className={`p-1.5 rounded-xl border transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-xl border transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
                   isLight
                     ? 'bg-[#F8FAFC] hover:bg-slate-100 border-[#E2E8F0] text-slate-700'
                     : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -696,7 +696,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 onClick={onRedo}
                 disabled={!canRedo}
                 title="Redo (Ctrl+Y / ⌘Y / ⌘⇧Z)"
-                className={`p-1.5 rounded-xl border transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-xl border transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
                   isLight
                     ? 'bg-[#F8FAFC] hover:bg-slate-100 border-[#E2E8F0] text-slate-700'
                     : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -716,7 +716,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               <select
                 value={item?.paperSize || 'A3'}
                 onChange={(e) => handlePaperSizeChange(e.target.value)}
-                className={`font-medium text-xs rounded-xl px-2.5 py-1.5 border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB] ${
+                className={`font-medium text-xs rounded-xl px-2.5 py-1.5 border transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB] ${
                   isLight
                     ? 'bg-[#F8FAFC] border-[#E2E8F0] text-[#0F172A]'
                     : 'bg-[#21262D] border-[#30363D] text-[#F8FAFC]'
@@ -750,7 +750,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 onClick={() => setShowTransformHandles(!showTransformHandles)}
                 disabled={!item}
                 title="Toggle interactive on-canvas corner resize handles"
-                className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
+                className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
                   showTransformHandles
                     ? 'bg-amber-500/15 border-amber-400 text-amber-700 dark:text-amber-300 font-semibold shadow-xs'
                     : isLight
@@ -771,7 +771,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             >
               <button
                 onClick={() => handleOrientationToggle('portrait')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
                   (item?.orientation || 'portrait') === 'portrait'
                     ? 'bg-[#2563EB] text-white font-semibold shadow-xs'
                     : isLight
@@ -783,7 +783,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               </button>
               <button
                 onClick={() => handleOrientationToggle('landscape')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
                   item?.orientation === 'landscape'
                     ? 'bg-[#2563EB] text-white font-semibold shadow-xs'
                     : isLight
@@ -802,7 +802,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               onClick={() => handleApplyPreset('bleed')}
               disabled={!item}
               title="Fill full bleed (+3mm bleed allowance on all sides)"
-              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
                 isLight
                   ? 'bg-blue-50/70 border-blue-200 text-[#2563EB] hover:bg-blue-100/70'
                   : 'bg-[#21262D] border-[#30363D] text-[#38bdf8] hover:bg-[#2A313C]'
@@ -816,7 +816,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               onClick={() => handleApplyPreset('width')}
               disabled={!item}
               title="Fit exact width of sheet"
-              className={`px-2 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
+              className={`px-2 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
                 isLight
                   ? 'bg-[#F8FAFC] border-[#E2E8F0] text-slate-700 hover:bg-slate-100'
                   : 'bg-[#21262D] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -829,7 +829,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               onClick={() => handleApplyPreset('height')}
               disabled={!item}
               title="Fit exact height of sheet"
-              className={`px-2 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
+              className={`px-2 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
                 isLight
                   ? 'bg-[#F8FAFC] border-[#E2E8F0] text-slate-700 hover:bg-slate-100'
                   : 'bg-[#21262D] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -842,7 +842,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               onClick={handleCenter}
               disabled={!item}
               title="Re-center image to (0.50, 0.50)"
-              className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer disabled:opacity-40 shadow-xs whitespace-nowrap ${
                 isLight
                   ? 'bg-[#F8FAFC] border-[#E2E8F0] text-slate-700 hover:bg-slate-100'
                   : 'bg-[#21262D] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -856,7 +856,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               onClick={onOpenUpscaler}
               disabled={!item}
               title="Edge-Aware Upscaler"
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 hover:from-amber-500/20 hover:to-rose-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-40 whitespace-nowrap"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 hover:from-amber-500/20 hover:to-rose-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shadow-xs disabled:opacity-40 whitespace-nowrap"
             >
               <Wand2 className="w-3.5 h-3.5 text-amber-500" />
               <span>Upscale</span>
@@ -868,7 +868,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             {/* Bleed guide toggle */}
             <button
               onClick={() => setShowBleedGuides(!showBleedGuides)}
-              className={`p-1.5 rounded-xl border transition-all cursor-pointer shadow-xs ${
+              className={`p-1.5 rounded-xl border transition cursor-pointer shadow-xs ${
                 showBleedGuides
                   ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-600 dark:text-cyan-400 font-semibold'
                   : isLight
@@ -883,7 +883,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             {/* Crosshairs toggle */}
             <button
               onClick={() => setShowCrosshairs(!showCrosshairs)}
-              className={`p-1.5 rounded-xl border transition-all cursor-pointer shadow-xs ${
+              className={`p-1.5 rounded-xl border transition cursor-pointer shadow-xs ${
                 showCrosshairs
                   ? 'bg-blue-500/10 border-blue-500/40 text-[#2563EB] dark:text-[#38bdf8] font-semibold'
                   : isLight
@@ -899,7 +899,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             <button
               onClick={onSaveToReady}
               disabled={!item}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer whitespace-nowrap ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer whitespace-nowrap ${
                 item?.isSavedToReady
                   ? 'bg-[#10B981] hover:bg-[#059669] text-white'
                   : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
@@ -950,7 +950,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 onAddFiles(e.dataTransfer.files);
               }
             }}
-            className={`max-w-md w-full mx-4 p-6 sm:p-8 rounded-2xl border-2 border-dashed text-center transition-all shadow-xl ${
+            className={`max-w-md w-full mx-4 p-6 sm:p-8 rounded-2xl border-2 border-dashed text-center transition shadow-xl ${
               isDragOverEmpty
                 ? 'border-[#2563EB] bg-blue-50/50 scale-[1.01]'
                 : isLight
@@ -980,7 +980,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             <button
               type="button"
               onClick={() => emptyFileInputRef.current?.click()}
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all shadow-md cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Choose Image from Device</span>
@@ -1155,7 +1155,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             {verdict && !verdict.isFullCoverage && (
               <div
                 onClick={() => handleApplyPreset('bleed')}
-                className={`absolute bottom-2.5 left-3 right-3 bg-[#EF4444]/95 text-white text-[11px] font-medium py-1.5 px-3 rounded-xl shadow-lg flex items-center justify-between cursor-pointer transition-all duration-700 ease-in-out z-20 ${
+                className={`absolute bottom-2.5 left-3 right-3 bg-[#EF4444]/95 text-white text-[11px] font-medium py-1.5 px-3 rounded-xl shadow-lg flex items-center justify-between cursor-pointer transition duration-700 ease-in-out z-20 ${
                   showMarginWarning
                     ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
                     : 'opacity-0 translate-y-3 scale-95 pointer-events-none'
@@ -1175,7 +1175,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
         {item && (
           <aside
             aria-label="Zoom controls"
-            className={`hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 backdrop-blur-md p-2 rounded-2xl flex-col items-center space-y-2.5 shadow-xl transition-all border ${
+            className={`hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-2xl flex-col items-center space-y-2.5 shadow-xl transition border ${
               isLight
                 ? 'bg-white/95 border-[#E2E8F0] text-[#0F172A]'
                 : 'bg-[#16191E]/95 border-[#262B33] text-[#F8FAFC]'
@@ -1259,7 +1259,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
         {/* Mobile Floating Zoom Pill (Bottom Right, does NOT block poster) */}
         {item && (
           <div
-            className={`sm:hidden absolute bottom-3 right-3 z-20 backdrop-blur-md px-2.5 py-1.5 rounded-full flex items-center space-x-2 shadow-lg border ${
+            className={`sm:hidden absolute bottom-3 right-3 z-20 px-2.5 py-1.5 rounded-full flex items-center space-x-2 shadow-lg border ${
               isLight
                 ? 'bg-white/95 border-[#E2E8F0] text-[#0F172A]'
                 : 'bg-[#16191E]/95 border-[#262B33] text-[#F8FAFC]'

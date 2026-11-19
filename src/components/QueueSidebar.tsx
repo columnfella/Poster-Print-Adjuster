@@ -93,7 +93,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
                 ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                 : 'bg-[#21262D] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -120,7 +120,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
 
           <button
             onClick={onOpenSampleModal}
-            className={`text-xs font-medium px-2 py-0.5 rounded-lg border transition-all cursor-pointer flex items-center space-x-1 ${
+            className={`text-xs font-medium px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center space-x-1 ${
               isLight
                 ? 'bg-white hover:bg-slate-100 border-[#E2E8F0] text-[#2563EB]'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#38bdf8]'
@@ -141,7 +141,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-3 sm:p-4 text-center cursor-pointer transition-all active:scale-98 ${
+          className={`border-2 border-dashed rounded-xl p-3 sm:p-4 text-center cursor-pointer transition active:scale-98 ${
             isDragOver
               ? 'border-[#2563EB] bg-blue-50/50 scale-[0.99]'
               : isLight
@@ -231,7 +231,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                   <div
                     key={it.id}
                     onClick={() => onSelectItem(it)}
-                    className={`group relative flex items-center p-2.5 rounded-xl border text-left cursor-pointer transition-all shadow-xs ${
+                    className={`group relative flex items-center p-2.5 rounded-xl border text-left cursor-pointer transition shadow-xs ${
                       isSelected
                         ? isLight
                           ? 'bg-blue-50/80 border-[#2563EB] ring-2 ring-[#2563EB]/20 shadow-sm'
@@ -265,7 +265,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                     <button
                       onClick={(e) => onDownloadSingle(it, e)}
                       title="Download individual 300 DPI JPEG"
-                      className={`p-1.5 rounded-lg border transition-all cursor-pointer mr-1 shrink-0 ${
+                      className={`p-1.5 rounded-lg border transition cursor-pointer mr-1 shrink-0 ${
                         isLight
                           ? 'bg-slate-100 hover:bg-[#2563EB] hover:text-white border-slate-200 text-slate-600'
                           : 'bg-[#21262D] hover:bg-[#0084FF] hover:text-white border-[#30363D] text-[#94A3B8]'
@@ -278,7 +278,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                     <button
                       onClick={(e) => onRemoveItem(it.id, e)}
                       title="Remove from queue"
-                      className="p-1.5 hover:text-[#EF4444] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-slate-400 transition-all cursor-pointer shrink-0"
+                      className="p-1.5 hover:text-[#EF4444] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-slate-400 transition cursor-pointer shrink-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -336,7 +336,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                   <div
                     key={it.id}
                     onClick={() => onSelectItem(it)}
-                    className={`group relative flex items-center p-2.5 rounded-xl border text-left cursor-pointer transition-all shadow-xs ${
+                    className={`group relative flex items-center p-2.5 rounded-xl border text-left cursor-pointer transition shadow-xs ${
                       isSelected
                         ? isLight
                           ? 'bg-blue-50/80 border-[#2563EB] ring-2 ring-[#2563EB]/20 shadow-sm'
@@ -363,7 +363,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                     <button
                       onClick={(e) => onDownloadSingle(it, e)}
                       title="Download individual 300 DPI File"
-                      className={`p-1.5 rounded-lg border transition-all cursor-pointer mr-1 ${
+                      className={`p-1.5 rounded-lg border transition cursor-pointer mr-1 ${
                         isLight
                           ? 'bg-slate-100 hover:bg-[#2563EB] hover:text-white border-slate-200 text-slate-600'
                           : 'bg-[#21262D] hover:bg-[#0084FF] hover:text-white border-[#30363D] text-[#94A3B8]'
@@ -376,7 +376,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
                     <button
                       onClick={(e) => onRemoveItem(it.id, e)}
                       title="Remove poster"
-                      className="p-1.5 hover:text-[#EF4444] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-slate-400 transition-all cursor-pointer"
+                      className="p-1.5 hover:text-[#EF4444] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-slate-400 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
                     </button>
@@ -397,7 +397,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
         <button
           onClick={onOpenExportModal}
           disabled={items.length === 0 || isExporting}
-          className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-sm cursor-pointer"
+          className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer"
         >
           <Download className="w-4 h-4 pointer-events-none" />
           <span>Export Posters (JPEG 300 DPI)</span>
@@ -407,7 +407,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
           <button
             onClick={onDownloadAllZip}
             disabled={isExporting}
-            className={`w-full text-[11px] py-1.5 px-3 rounded-lg border font-medium flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+            className={`w-full text-[11px] py-1.5 px-3 rounded-lg border font-medium flex items-center justify-center space-x-1.5 transition cursor-pointer ${
               isLight
                 ? 'bg-white hover:bg-slate-100 border-[#E2E8F0] text-slate-600'
                 : 'bg-[#1C2027] hover:bg-[#21262D] border-[#30363D] text-slate-400 hover:text-white'

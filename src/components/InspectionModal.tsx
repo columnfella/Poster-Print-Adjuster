@@ -211,13 +211,13 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({ item, isOpen, 
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 select-none transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 select-none transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-[#16191E] border border-[#262B33] rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden font-sans text-white transition-all duration-300 ease-out transform ${
+        className={`bg-[#16191E] border border-[#262B33] rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden font-sans text-white transition duration-300 ease-out transform ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-3'
         }`}
       >
@@ -287,7 +287,7 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({ item, isOpen, 
           />
 
           {/* Crosshair guide overlay in bottom-right */}
-          <div className="absolute bottom-4 right-4 bg-[#16191E]/90 backdrop-blur-md border border-[#262B33] px-3 py-1.5 rounded-xl text-xs font-medium text-[#F8FAFC] shadow-lg pointer-events-none">
+          <div className="absolute bottom-4 right-4 bg-[#16191E]/90 border border-[#262B33] px-3 py-1.5 rounded-xl text-xs font-medium text-[#F8FAFC] shadow-lg pointer-events-none">
             <span>Scale: {Math.round(scaleMode * 100)}%</span>
             <span className="mx-2 opacity-50">•</span>
             <span className="text-[#10B981] font-semibold">Target: 300 DPI</span>
@@ -302,7 +302,7 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({ item, isOpen, 
           </span>
           <button
             onClick={onClose}
-            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-5 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer font-semibold text-xs"
+            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-5 py-1.5 rounded-xl transition shadow-sm cursor-pointer font-semibold text-xs"
           >
             Done
           </button>

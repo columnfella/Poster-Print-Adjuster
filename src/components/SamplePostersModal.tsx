@@ -65,13 +65,13 @@ export const SamplePostersModal: React.FC<SamplePostersModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 select-none font-sans transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 select-none font-sans transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-[#16191E] border border-[#262B33] rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl overflow-hidden text-white transition-all duration-300 ease-out transform ${
+        className={`bg-[#16191E] border border-[#262B33] rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl overflow-hidden text-white transition duration-300 ease-out transform ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-3'
         }`}
       >
@@ -108,7 +108,7 @@ export const SamplePostersModal: React.FC<SamplePostersModalProps> = ({
             {samples.map((s) => (
               <div
                 key={s.id}
-                className="bg-[#111317] border border-[#262B33] hover:border-[#2563EB] rounded-xl p-4 flex flex-col justify-between transition-all group"
+                className="bg-[#111317] border border-[#262B33] hover:border-[#2563EB] rounded-xl p-4 flex flex-col justify-between transition group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -138,7 +138,7 @@ export const SamplePostersModal: React.FC<SamplePostersModalProps> = ({
                     onLoadSample(s.id);
                     onClose();
                   }}
-                  className="mt-4 w-full bg-[#21262D] hover:bg-[#2563EB] text-[#F8FAFC] hover:text-white py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer border border-[#30363D] hover:border-transparent shadow-xs"
+                  className="mt-4 w-full bg-[#21262D] hover:bg-[#2563EB] text-[#F8FAFC] hover:text-white py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition cursor-pointer border border-[#30363D] hover:border-transparent shadow-xs"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>Load Into Queue</span>

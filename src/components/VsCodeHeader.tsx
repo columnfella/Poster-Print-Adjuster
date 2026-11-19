@@ -138,7 +138,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex md:hidden items-center space-x-1.5 bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] hover:from-[#1D4ED8] hover:to-[#1E40AF] active:scale-95 text-white font-semibold text-xs px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+            className="flex md:hidden items-center space-x-1.5 bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] hover:from-[#1D4ED8] hover:to-[#1E40AF] active:scale-95 text-white font-semibold text-xs px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition shadow-sm cursor-pointer"
             title="Upload image or poster (PNG, JPG, WEBP)"
           >
             <span className="text-base leading-none font-bold">+</span>
@@ -149,7 +149,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
           <button
             type="button"
             onClick={onToggleQueue}
-            className={`flex md:hidden items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border text-xs font-medium cursor-pointer transition-all active:scale-95 ${
+            className={`flex md:hidden items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border text-xs font-medium cursor-pointer transition active:scale-95 ${
               isQueueOpen
                 ? 'bg-[#2563EB] text-white border-[#2563EB]'
                 : isLight
@@ -178,7 +178,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
             <button
               type="button"
               onClick={onToggleTheme}
-              className={`p-2 rounded-xl border transition-all cursor-pointer shadow-xs active:scale-95 ${
+              className={`p-2 rounded-xl border transition cursor-pointer shadow-xs active:scale-95 ${
                 isLight
                   ? 'bg-[#F8FAFC] border-[#E2E8F0] text-slate-700 hover:bg-slate-100'
                   : 'bg-[#21262D] border-[#30363D] text-slate-200 hover:bg-slate-700'
@@ -206,7 +206,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
         <div className="flex items-center space-x-1 shrink-0">
           <button
             onClick={() => setActiveTab('editor')}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition cursor-pointer whitespace-nowrap ${
               activeTab === 'editor'
                 ? isLight
                   ? 'bg-[#FFFFFF] text-[#2563EB] shadow-xs font-semibold border border-[#E2E8F0]'
@@ -222,7 +222,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
 
           <button
             onClick={() => setActiveTab('verdict')}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition cursor-pointer whitespace-nowrap ${
               activeTab === 'verdict'
                 ? isLight
                   ? 'bg-[#FFFFFF] text-[#10B981] shadow-xs font-semibold border border-[#E2E8F0]'
@@ -238,7 +238,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
 
           <button
             onClick={() => setActiveTab('wall')}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition cursor-pointer whitespace-nowrap ${
               activeTab === 'wall'
                 ? isLight
                   ? 'bg-[#FFFFFF] text-[#8B5CF6] shadow-xs font-semibold border border-[#E2E8F0]'
@@ -259,7 +259,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
           <button
             onClick={onOpenInspectModal}
             disabled={!currentItem}
-            className={`flex items-center space-x-1 text-xs px-2.5 sm:px-3 py-1.5 rounded-xl border transition-all cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap ${
+            className={`flex items-center space-x-1 text-xs px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap ${
               isLight
                 ? 'bg-[#FFFFFF] hover:bg-slate-50 border-[#E2E8F0] text-[#0F172A]'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#F8FAFC]'
@@ -274,7 +274,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
           <button
             onClick={onOpenExportModal || onDownloadCurrent}
             disabled={!currentItem || isExporting}
-            className="flex md:hidden items-center space-x-1.5 text-xs bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-3 sm:px-4 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer whitespace-nowrap active:scale-95"
+            className="flex md:hidden items-center space-x-1.5 text-xs bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-3 sm:px-4 py-1.5 rounded-xl transition shadow-xs cursor-pointer whitespace-nowrap active:scale-95"
             title="Download posters as regular 300 DPI JPEG"
           >
             <Download className="w-3.5 h-3.5 pointer-events-none" />
@@ -286,7 +286,7 @@ export const VsCodeHeader: React.FC<VsCodeHeaderProps> = ({
             <button
               onClick={onDownloadAllZip}
               disabled={isExporting}
-              className="flex md:hidden items-center space-x-1 text-xs bg-[#10B981] hover:bg-[#059669] disabled:opacity-40 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer whitespace-nowrap active:scale-95"
+              className="flex md:hidden items-center space-x-1 text-xs bg-[#10B981] hover:bg-[#059669] disabled:opacity-40 text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition shadow-xs cursor-pointer whitespace-nowrap active:scale-95"
               title={`Download all ${readyCount} print-ready posters in ZIP`}
             >
               <Archive className="w-3.5 h-3.5" />

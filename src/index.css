@@ -68,3 +68,35 @@
   scrollbar-width: none;  /* Firefox */
 }
 
+
+/* Toast entrance (uses `transform`, independent of Tailwind v4's `translate` utilities) */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast-enter {
+  animation: toast-in 220ms ease-out;
+}
+
+/* Respect the OS "reduce motion" setting: near-instant animations and transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* keep loading spinners turning: they convey progress, not decoration */
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

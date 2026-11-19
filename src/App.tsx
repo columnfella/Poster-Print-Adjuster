@@ -88,14 +88,22 @@ export default function App() {
   // Export state
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgressText, setExportProgressText] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Toast: slides in, holds, then fades out (stays mounted during the exit animation)
+  const TOAST_HOLD_MS = 3200;
+  const TOAST_EXIT_MS = 250;
+  const [toast, setToast] = useState<{ id: number; msg: string } | null>(null);
+  const [toastLeaving, setToastLeaving] = useState(false);
+  const toastTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMessage(null), 3500);
+    toastTimersRef.current.forEach(clearTimeout);
+    setToast({ id: Date.now() + Math.random(), msg });
+    setToastLeaving(false);
+    toastTimersRef.current = [
+      setTimeout(() => setToastLeaving(true), TOAST_HOLD_MS),
+      setTimeout(() => setToast(null), TOAST_HOLD_MS + TOAST_EXIT_MS),
+    ];
   }, []);
+  useEffect(() => () => toastTimersRef.current.forEach(clearTimeout), []);
 
   const currentItem = items.find((i) => i.id === currentId) || (items.length > 0 ? items[0] : null);
 
@@ -233,6 +241,7 @@ export default function App() {
         const { file, width, height } = await createSamplePosterBlob(type);
         const item = await processImageFile(file, file.name);
         if (item) {
+          sampleIdsRef.current.add(item.id);
           setItems((prev) => [...prev, item]);
           setCurrentId(item.id);
           showToast(`Loaded sample poster: ${item.name}`);
@@ -251,7 +260,10 @@ export default function App() {
     for (const t of types) {
       const { file } = await createSamplePosterBlob(t);
       const item = await processImageFile(file, file.name);
-      if (item) added.push(item);
+      if (item) {
+        sampleIdsRef.current.add(item.id);
+        added.push(item);
+      }
     }
     if (added.length > 0) {
       setItems((prev) => [...prev, ...added]);
@@ -261,6 +273,21 @@ export default function App() {
   }, [processImageFile, showToast]);
 
   const initialSeedRef = useRef(false);
+
+  // Demo posters (auto-loaded or from Samples) don't count as unsaved work until edited
+  const sampleIdsRef = useRef<Set<string>>(new Set());
+  const hasUnsavedWork = items.some((i) => !sampleIdsRef.current.has(i.id) || i.version > 1);
+
+  // Nothing is persisted, so ask before a refresh/close would discard uploaded or edited posters
+  useEffect(() => {
+    if (!hasUnsavedWork) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // required by some browsers to show the native prompt
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [hasUnsavedWork]);
 
   // Initial load: seed one sample poster ONCE on mount so app is immediately alive on initial boot.
   // CRITICAL FIX: Does NOT respawn if the user deletes the poster from the queue!
@@ -817,7 +844,7 @@ export default function App() {
         {isQueueOpen && (
           <div
             onClick={() => setIsQueueOpen(false)}
-            className="md:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-xs"
+            className="md:hidden fixed inset-0 bg-black/60 z-40"
           />
         )}
 
@@ -908,10 +935,17 @@ export default function App() {
       </div>
 
       {/* Floating Action / Notification Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-[#1f242c] text-[#e6edf3] border border-[#388bfd66] px-4 py-2 rounded-full shadow-2xl text-xs font-mono flex items-center space-x-2 animate-bounce">
+      {toast && (
+        <div
+          key={toast.id}
+          role="status"
+          aria-live="polite"
+          className={`toast-enter fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1f242c] text-[#e6edf3] border border-[#388bfd66] px-4 py-2 rounded-full shadow-lg text-xs font-mono flex items-center space-x-2 pointer-events-none transition-[opacity,translate] duration-200 ease-out ${
+            toastLeaving ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+          }`}
+        >
           <span className="w-2 h-2 rounded-full bg-[#388bfd]"></span>
-          <span>{toastMessage}</span>
+          <span>{toast.msg}</span>
         </div>
       )}
 

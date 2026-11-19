@@ -153,13 +153,13 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 sm:p-5 select-none font-sans transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-5 select-none font-sans transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ease-out transform max-h-[92vh] ${
+        className={`w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col overflow-hidden transition duration-300 ease-out transform max-h-[92vh] ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-3'
         } ${
           isLight
@@ -194,7 +194,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
                 ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-[#94A3B8] hover:text-white'
@@ -262,7 +262,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOrientation('portrait')}
-                className={`p-2.5 rounded-xl border text-center font-medium text-xs cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-center font-medium text-xs cursor-pointer transition ${
                   orientation === 'portrait'
                     ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
                     : isLight
@@ -275,7 +275,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOrientation('landscape')}
-                className={`p-2.5 rounded-xl border text-center font-medium text-xs cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-center font-medium text-xs cursor-pointer transition ${
                   orientation === 'landscape'
                     ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
                     : isLight
@@ -314,7 +314,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
                         key={key}
                         type="button"
                         onClick={() => setSelectedSize(key)}
-                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between ${
                           isSelected
                             ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                             : isLight
@@ -350,7 +350,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
                         key={key}
                         type="button"
                         onClick={() => setSelectedSize(key)}
-                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between ${
                           isSelected
                             ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                             : isLight
@@ -386,7 +386,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
                         key={key}
                         type="button"
                         onClick={() => setSelectedSize(key)}
-                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between ${
                           isSelected
                             ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                             : isLight
@@ -409,7 +409,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setSelectedSize('Custom')}
-                    className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                    className={`p-2 rounded-xl border text-left cursor-pointer transition flex flex-col justify-between ${
                       selectedSize === 'Custom'
                         ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                         : isLight
@@ -555,7 +555,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFitMode('bleed')}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   fitMode === 'bleed'
                     ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                     : isLight
@@ -574,7 +574,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFitMode('fit')}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   fitMode === 'fit'
                     ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                     : isLight
@@ -591,7 +591,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFitMode('keep')}
-                className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                className={`p-2.5 rounded-xl border text-left cursor-pointer transition ${
                   fitMode === 'keep'
                     ? 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/30'
                     : isLight
@@ -634,7 +634,7 @@ export const AdjustPosterSizeModal: React.FC<AdjustPosterSizeModalProps> = ({
             <button
               type="button"
               onClick={handleApply}
-              className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-98 cursor-pointer flex items-center space-x-1.5"
+              className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition shadow-md active:scale-98 cursor-pointer flex items-center space-x-1.5"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Apply Size & Refit</span>

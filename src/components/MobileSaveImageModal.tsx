@@ -63,13 +63,13 @@ export const MobileSaveImageModal: React.FC<MobileSaveImageModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/80 transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-lg flex flex-col rounded-2xl border shadow-2xl overflow-hidden max-h-[92vh] transition-all duration-300 ease-out transform ${
+        className={`w-full max-w-lg flex flex-col rounded-2xl border shadow-2xl overflow-hidden max-h-[92vh] transition duration-300 ease-out transform ${
           isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
         } ${
           isLight ? 'bg-white border-[#E2E8F0] text-[#0F172A]' : 'bg-[#16191E] border-[#262B33] text-[#F8FAFC]'
@@ -96,7 +96,7 @@ export const MobileSaveImageModal: React.FC<MobileSaveImageModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
                 ? 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700'
                 : 'bg-[#21262D] hover:bg-[#2A313C] border-[#30363D] text-slate-300'
@@ -144,7 +144,7 @@ export const MobileSaveImageModal: React.FC<MobileSaveImageModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="w-full flex-1 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer"
+              className="w-full flex-1 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-xs cursor-pointer"
             >
               <Share2 className="w-4 h-4 pointer-events-none" />
               <span>Save to Photos / Share</span>
@@ -156,7 +156,7 @@ export const MobileSaveImageModal: React.FC<MobileSaveImageModalProps> = ({
             onClick={handleDirectDownload}
             className={`w-full ${
               hasNativeShare ? 'sm:w-auto' : 'flex-1'
-            } bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer`}
+            } bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-xs cursor-pointer`}
           >
             <Download className="w-4 h-4 pointer-events-none" />
             <span>Download .JPG File</span>
