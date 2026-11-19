@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Wand2,
   X,
@@ -25,6 +25,7 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Cloud,
 } from 'lucide-react';
 import { PosterItem } from '../types';
 import { PrintVerdict } from '../utils/printLogic';
@@ -37,6 +38,17 @@ import {
   blendArtworkPresets,
 } from '../utils/upscalerLogic';
 import { useUpscaler, UpscaleResult } from '../hooks/useUpscaler';
+import {
+  AI_MODELS,
+  AiModelId,
+  CloudStatus,
+  CloudCancelledError,
+  CloudUpscaleError,
+  checkAiAvailability,
+  cloudAiUpscale,
+  computeAiInputSize,
+  AI_NATIVE_SCALE,
+} from '../utils/cloudUpscaler';
 import { useModalTransition } from '../hooks/useModalTransition';
 import { downloadJpegBlob } from '../utils/downloadHelper';
 
@@ -76,6 +88,41 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
   const [completedResult, setCompletedResult] = useState<UpscaleResult | null>(null);
 
   const { isProcessing, progress, stage, error, upscaleImage, cancelUpscale } = useUpscaler();
+
+  const [engine, setEngine] = useState<'local' | 'ai'>('local');
+  const [aiModel, setAiModel] = useState<AiModelId>('general');
+  const [cloudStatus, setCloudStatus] = useState<CloudStatus | null>(null);
+  const [cloudError, setCloudError] = useState<{ message: string; detail?: string } | null>(null);
+  const [cloudProvider, setCloudProvider] = useState<string>('');
+  const [aiAvailability, setAiAvailability] = useState<'unknown' | 'checking' | 'available' | 'unavailable'>(
+    'unknown'
+  );
+  const [showErrorDetail, setShowErrorDetail] = useState(false);
+  const cloudAbortRef = useRef<AbortController | null>(null);
+  const isBusy = isProcessing || cloudStatus !== null;
+  const aiBlocked = engine === 'ai' && (aiAvailability === 'unavailable' || aiAvailability === 'checking');
+
+  // Abort any in-flight cloud request on unmount
+  useEffect(() => () => cloudAbortRef.current?.abort(), []);
+
+  // Probe the AI endpoint whenever the AI engine is selected
+  useEffect(() => {
+    if (engine !== 'ai' || !isOpen) return;
+    let cancelled = false;
+    setAiAvailability('checking');
+    checkAiAvailability().then((ok) => {
+      if (!cancelled) setAiAvailability(ok ? 'available' : 'unavailable');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [engine, isOpen]);
+
+  const switchToLocal = () => {
+    setEngine('local');
+    setCloudError(null);
+    setShowErrorDetail(false);
+  };
 
   // Reset completedResult and cancel pending operations whenever item ID changes or modal opens
   useEffect(() => {
@@ -184,8 +231,75 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
     setCompletedResult(null);
   };
 
+  const cancelAll = () => {
+    cloudAbortRef.current?.abort();
+    cloudAbortRef.current = null;
+    setCloudStatus(null);
+    if (isProcessing) cancelUpscale();
+  };
+
+  const handleClose = () => {
+    cancelAll();
+    setCompletedResult(null);
+    onClose();
+  };
+
   const handleStartUpscaling = async () => {
     setCompletedResult(null);
+    setCloudError(null);
+    setShowErrorDetail(false);
+
+    if (engine === 'ai') {
+      const controller = new AbortController();
+      cloudAbortRef.current = controller;
+      setCloudStatus({ message: 'Starting AI upscaler…' });
+      let aiBlob: Blob;
+      try {
+        const { blob, provider } = await cloudAiUpscale(
+          item.file,
+          item.width,
+          item.height,
+          targetSpec.targetWidth,
+          targetSpec.targetHeight,
+          aiModel,
+          (s) => {
+            if (!controller.signal.aborted) setCloudStatus(s);
+          },
+          controller.signal
+        );
+        aiBlob = blob;
+        setCloudProvider(provider);
+      } catch (err: any) {
+        setCloudStatus(null);
+        if (!(err instanceof CloudCancelledError) && !controller.signal.aborted) {
+          if (err instanceof CloudUpscaleError) {
+            setCloudError({ message: err.message, detail: err.detail });
+          } else {
+            setCloudError({
+              message:
+                "The AI upscaler isn't available right now. Please try again later, or use the Local engine instead.",
+              detail: err?.message,
+            });
+          }
+        }
+        return;
+      } finally {
+        if (cloudAbortRef.current === controller) cloudAbortRef.current = null;
+      }
+      if (controller.signal.aborted) return;
+      setCloudStatus(null);
+
+      // Fit the AI output to the exact print target (light deringed Lanczos, no extra synthesis).
+      // Errors here are local and are reported by the useUpscaler hook.
+      try {
+        const res = await upscaleImage(aiBlob, targetSpec.targetWidth, targetSpec.targetHeight, 0.25, 25, true, 0, 0);
+        setCompletedResult(res);
+      } catch {
+        /* surfaced via `error` from useUpscaler */
+      }
+      return;
+    }
+
     try {
       const res = await upscaleImage(
         item.file,
@@ -264,11 +378,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
 
   return (
     <div
-      onClick={() => {
-        if (isProcessing) cancelUpscale();
-        setCompletedResult(null);
-        onClose();
-      }}
+      onClick={handleClose}
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 sm:p-5 select-none font-sans transition-opacity duration-300 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
@@ -313,11 +423,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
           </div>
 
           <button
-            onClick={() => {
-              if (isProcessing) cancelUpscale();
-              setCompletedResult(null);
-              onClose();
-            }}
+            onClick={handleClose}
             className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
               isLight
                 ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
@@ -383,6 +489,164 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
             </div>
           </div>
 
+          {/* Engine Selection: Local (private) vs free Cloud AI */}
+          <div>
+            <label
+              className={`text-[11px] font-bold uppercase tracking-wider block mb-1.5 ${
+                isLight ? 'text-[#64748B]' : 'text-[#94A3B8]'
+              }`}
+            >
+              Upscaling Engine
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {([
+                {
+                  id: 'local' as const,
+                  icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
+                  title: 'Local Reconstruction',
+                  sub: 'Private • Offline • Never leaves your device',
+                },
+                {
+                  id: 'ai' as const,
+                  icon: <Cloud className="w-4 h-4 text-purple-500" />,
+                  title: 'AI Super-Resolution (Cloud)',
+                  sub: 'Free neural upscaler • Uploads to Hugging Face',
+                },
+              ]).map((opt) => {
+                const active = engine === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => {
+                      setEngine(opt.id);
+                      setCompletedResult(null);
+                      setCloudError(null);
+                    }}
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all disabled:cursor-not-allowed ${
+                      active
+                        ? isLight
+                          ? 'bg-blue-50/80 border-[#2563EB] ring-2 ring-[#2563EB]/30'
+                          : 'bg-[#2563EB]/15 border-[#2563EB] ring-2 ring-[#2563EB]/40'
+                        : isLight
+                        ? 'bg-white border-[#E2E8F0] hover:border-slate-300'
+                        : 'bg-[#111317] border-[#262B33] hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {opt.icon}
+                        <span className="font-bold text-xs">{opt.title}</span>
+                      </div>
+                      {active && <Check className="w-4 h-4 text-[#2563EB] dark:text-[#38bdf8]" />}
+                    </div>
+                    <p className={`text-[11px] mt-1 ${isLight ? 'text-slate-600' : 'text-[#94A3B8]'}`}>
+                      {opt.sub}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {engine === 'ai' && (
+            <div className="space-y-2.5">
+              <div
+                className={`p-3 rounded-xl border text-[11px] leading-snug flex items-start space-x-2 ${
+                  isLight
+                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                    : 'bg-amber-500/10 border-amber-500/40 text-amber-200'
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-px text-amber-500" />
+                <span>
+                  This sends your image to a free public Hugging Face Space (Phips/Upscaler, with a Real-ESRGAN
+                  fallback). Anonymous use is limited to a few runs per day; add a free <code>HF_TOKEN</code> to{' '}
+                  <code>.env</code> for more. Use the Local engine for private artwork.
+                </span>
+              </div>
+
+              {(() => {
+                const sent = computeAiInputSize(
+                  item.width,
+                  item.height,
+                  targetSpec.targetWidth,
+                  targetSpec.targetHeight
+                );
+                const aiOut = { w: sent.width * AI_NATIVE_SCALE, h: sent.height * AI_NATIVE_SCALE };
+                const undersized = aiOut.w < targetSpec.targetWidth * 0.98;
+                return (
+                  <div
+                    className={`p-2.5 rounded-xl border text-[11px] font-mono ${
+                      undersized
+                        ? isLight
+                          ? 'bg-amber-50 border-amber-300 text-amber-900'
+                          : 'bg-amber-500/10 border-amber-500/40 text-amber-200'
+                        : isLight
+                        ? 'bg-slate-50 border-slate-200 text-slate-600'
+                        : 'bg-[#111317] border-[#262B33] text-slate-400'
+                    }`}
+                  >
+                    Sent at {sent.width}×{sent.height} px → AI 4× = {aiOut.w}×{aiOut.h} px → fitted to{' '}
+                    {targetSpec.targetWidth}×{targetSpec.targetHeight} px
+                    {undersized && (
+                      <div className="font-sans mt-1">
+                        This image is larger than the free GPU input limit, so it gets downsized first. For
+                        already-detailed images, the Local engine may give a sharper result.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <label
+                className={`text-[11px] font-bold uppercase tracking-wider flex items-center space-x-1.5 ${
+                  isLight ? 'text-[#64748B]' : 'text-[#94A3B8]'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                <span>AI Model</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {AI_MODELS.map((m) => {
+                  const active = aiModel === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => {
+                        setAiModel(m.id);
+                        setCompletedResult(null);
+                      }}
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all disabled:cursor-not-allowed ${
+                        active
+                          ? isLight
+                            ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/30'
+                            : 'bg-purple-500/15 border-purple-500 ring-2 ring-purple-500/40'
+                          : isLight
+                          ? 'bg-white border-[#E2E8F0] hover:border-slate-300'
+                          : 'bg-[#111317] border-[#262B33] hover:border-slate-500'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs">{m.name}</span>
+                        {active && <Check className="w-4 h-4 text-purple-500" />}
+                      </div>
+                      <p className={`text-[11px] leading-snug ${isLight ? 'text-slate-600' : 'text-[#94A3B8]'}`}>
+                        {m.description}
+                      </p>
+                      <p className="text-[10px] font-mono mt-1.5 text-purple-500">{m.phipsModel}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {engine === 'local' && (
+          <>
           {/* Section 1: Artwork Type & Style Presets */}
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
@@ -567,6 +831,9 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
             </div>
           )}
 
+          </>
+          )}
+
           {/* Section 2: Scale Strategy Selection */}
           <div>
             <label
@@ -662,7 +929,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
           </div>
 
           {/* Section 3: Fine-Tune Parameters (ONLY AND ONLY SHOWN IN THE MANUAL OPTION) */}
-          {isManualActive && (
+          {engine === 'local' && isManualActive && (
             <div
               className={`p-4 rounded-xl border space-y-4 transition-all ${
                 isLight
@@ -879,12 +1146,106 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 <span>Zero UI blocking via dedicated Web Worker thread</span>
                 <button
                   type="button"
-                  onClick={cancelUpscale}
+                  onClick={cancelAll}
                   className="text-rose-500 hover:underline cursor-pointer"
                 >
                   Cancel Execution
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Cloud AI Progress */}
+          {cloudStatus && (
+            <div
+              className={`p-4 rounded-xl border space-y-2.5 font-mono shadow-md ${
+                isLight ? 'bg-purple-50/70 border-purple-300 text-slate-800' : 'bg-[#111317] border-purple-500/50'
+              }`}
+            >
+              <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center space-x-2 text-purple-600 dark:text-purple-300">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="font-bold">{cloudStatus.message}</span>
+                </div>
+                {cloudStatus.progress !== undefined && (
+                  <span className="font-bold">{cloudStatus.progress}%</span>
+                )}
+              </div>
+              <div className={`w-full h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-200' : 'bg-[#21262D]'}`}>
+                <div
+                  className={`h-full bg-gradient-to-r from-purple-500 to-[#2563EB] transition-all duration-300 ${
+                    cloudStatus.progress === undefined ? 'w-1/3 animate-pulse' : ''
+                  }`}
+                  style={cloudStatus.progress !== undefined ? { width: `${cloudStatus.progress}%` } : undefined}
+                />
+              </div>
+              <div className={`flex justify-between text-[10px] ${isLight ? 'text-slate-500' : 'text-[#858585]'}`}>
+                <span>Free Hugging Face GPU • usually 10–60 s</span>
+                <button type="button" onClick={cancelAll} className="text-rose-500 hover:underline cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* AI unavailable / failed: friendly message + one-click fallback to the Local engine */}
+          {engine === 'ai' && (cloudError || aiAvailability === 'unavailable') && !isBusy && (
+            <div
+              className={`p-3.5 rounded-xl border text-xs space-y-2 ${
+                isLight ? 'bg-rose-50 border-rose-300 text-rose-800' : 'bg-[#3b1219] border-[#f8514966] text-[#ffa198]'
+              }`}
+            >
+              <div className="flex items-start space-x-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-px text-rose-500" />
+                <div className="space-y-1">
+                  <div className="font-bold">AI upscaler isn't available for now</div>
+                  <p className="leading-snug">
+                    {cloudError?.message ??
+                      "The AI upscaling service can't be reached from this site right now. You can still upscale with the Local engine, which runs entirely on your device."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 pl-6">
+                <button
+                  type="button"
+                  onClick={switchToLocal}
+                  className="bg-[#2563EB] hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
+                >
+                  Use Local engine instead
+                </button>
+                {cloudError && (
+                  <button
+                    type="button"
+                    onClick={handleStartUpscaling}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer ${
+                      isLight ? 'bg-white border-rose-300 hover:bg-rose-100' : 'bg-transparent border-[#f8514966] hover:bg-white/5'
+                    }`}
+                  >
+                    Try AI again
+                  </button>
+                )}
+                {cloudError?.detail && (
+                  <button
+                    type="button"
+                    onClick={() => setShowErrorDetail((v) => !v)}
+                    className="text-[11px] underline opacity-80 cursor-pointer"
+                  >
+                    {showErrorDetail ? 'Hide details' : 'Details'}
+                  </button>
+                )}
+              </div>
+              {showErrorDetail && cloudError?.detail && (
+                <pre className="pl-6 text-[10px] font-mono whitespace-pre-wrap break-words opacity-80">
+                  {cloudError.detail}
+                </pre>
+              )}
+            </div>
+          )}
+
+          {engine === 'ai' && aiAvailability === 'checking' && !isBusy && (
+            <div className={`text-[11px] flex items-center space-x-1.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Checking AI upscaler availability…</span>
             </div>
           )}
 
@@ -920,7 +1281,17 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   isLight ? 'text-emerald-800' : 'text-[#7ee787]'
                 }`}
               >
-                The artwork for <span className="font-semibold">{item.name}</span> has been rebuilt with edge-directed interpolation, back-projection detail reconstruction and scale-aware sharpening.
+                {engine === 'ai' ? (
+                  <>
+                    The artwork for <span className="font-semibold">{item.name}</span> was enhanced by a neural
+                    super-resolution model via {cloudProvider || 'Hugging Face'}, then fitted to the exact print size.
+                  </>
+                ) : (
+                  <>
+                    The artwork for <span className="font-semibold">{item.name}</span> has been rebuilt with
+                    edge-directed interpolation, back-projection detail reconstruction and scale-aware sharpening.
+                  </>
+                )}
               </p>
 
               <div className="flex flex-wrap gap-2 pt-1">
@@ -961,17 +1332,15 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
               isLight ? 'text-slate-500' : 'text-[#94A3B8]'
             }`}
           >
-            100% Private Client-Side Processing • Zero Cloud Uploads
+            {engine === 'ai'
+              ? 'Cloud AI • Image is uploaded to Hugging Face for processing'
+              : '100% Private Client-Side Processing • Zero Cloud Uploads'}
           </span>
 
           <div className="flex items-center space-x-2 ml-auto">
             <button
               type="button"
-              onClick={() => {
-                if (isProcessing) cancelUpscale();
-                setCompletedResult(null);
-                onClose();
-              }}
+              onClick={handleClose}
               className={`px-3.5 py-1.5 rounded-xl border transition-colors cursor-pointer text-xs ${
                 isLight
                   ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
@@ -985,11 +1354,13 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
               <button
                 type="button"
                 onClick={handleStartUpscaling}
-                disabled={isProcessing}
+                disabled={isBusy || aiBlocked}
                 className="bg-gradient-to-r from-[#2563EB] to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40 text-white font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 text-xs shadow-sm active:scale-98"
               >
                 <Wand2 className="w-3.5 h-3.5 text-amber-300" />
-                <span>{isProcessing ? 'Upscaling…' : 'Process Upscale'}</span>
+                <span>
+                  {isBusy ? 'Upscaling…' : engine === 'ai' ? 'Run AI Upscale' : 'Process Upscale'}
+                </span>
               </button>
             )}
           </div>

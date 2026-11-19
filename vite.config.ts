@@ -1,11 +1,25 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, type Plugin} from 'vite';
+import {aiUpscaleHandler} from './server/aiUpscale.ts';
+
+/** Serves /api/ai-upscale (free Hugging Face AI upscaler proxy) in dev and preview. */
+function aiUpscaleApi(): Plugin {
+  // Must not return anything: Vite treats a returned function as a post-middleware hook.
+  const mount = (server: {middlewares: {use: (path: string, fn: any) => unknown}}): void => {
+    server.middlewares.use('/api/ai-upscale', aiUpscaleHandler);
+  };
+  return {
+    name: 'ai-upscale-api',
+    configureServer: mount,
+    configurePreviewServer: mount,
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), aiUpscaleApi()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
