@@ -4,6 +4,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { planBands, stitchBand, type UpscaleParams } from '../utils/upscaleEngine';
 
 export interface UpscaleProgress {
   isProcessing: boolean;
@@ -19,34 +20,43 @@ export interface UpscaleResult {
   height: number;
 }
 
+/** Worker threads to use: one per logical core, capped to keep memory sane. */
+function getThreadCount(): number {
+  const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 4 : 4;
+  return Math.max(1, Math.min(8, cores));
+}
+
 export function useUpscaler() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [stage, setStage] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const workerRef = useRef<Worker | null>(null);
+  const workersRef = useRef<Worker[]>([]);
+  const abortJobRef = useRef<((reason: Error) => void) | null>(null);
 
-  // Terminate worker if component unmounts
-  useEffect(() => {
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
-    };
+  const terminateAll = useCallback(() => {
+    for (const w of workersRef.current) w.terminate();
+    workersRef.current = [];
   }, []);
 
+  // Terminate workers if component unmounts
+  useEffect(() => {
+    return () => {
+      abortJobRef.current?.(new Error('Cancelled'));
+      terminateAll();
+    };
+  }, [terminateAll]);
+
   const cancelUpscale = useCallback(() => {
-    if (workerRef.current) {
-      workerRef.current.terminate();
-      workerRef.current = null;
-    }
+    abortJobRef.current?.(new Error('Cancelled'));
+    abortJobRef.current = null;
+    terminateAll();
     setIsProcessing(false);
     setProgress(0);
     setStage('Cancelled by user');
     setError(null);
-  }, []);
+  }, [terminateAll]);
 
   const upscaleImage = useCallback(
     async (
@@ -67,7 +77,7 @@ export function useUpscaler() {
       // Extract raw RGBA ImageData from source
       let srcWidth: number;
       let srcHeight: number;
-      let rawBuffer: ArrayBuffer;
+      let srcPixels: Uint8ClampedArray;
 
       try {
         let srcCanvas: HTMLCanvasElement;
@@ -93,7 +103,7 @@ export function useUpscaler() {
 
         const srcCtx = srcCanvas.getContext('2d');
         if (!srcCtx) throw new Error('Could not access canvas context');
-        rawBuffer = srcCtx.getImageData(0, 0, srcWidth, srcHeight).data.buffer as ArrayBuffer;
+        srcPixels = srcCtx.getImageData(0, 0, srcWidth, srcHeight).data;
       } catch (decodeErr: any) {
         const msg = decodeErr?.message || 'Could not decode source image';
         setIsProcessing(false);
@@ -101,106 +111,137 @@ export function useUpscaler() {
         throw decodeErr instanceof Error ? decodeErr : new Error(msg);
       }
 
-      // Spawn Web Worker using Vite module worker syntax
-      if (workerRef.current) {
-        workerRef.current.terminate();
-      }
+      // ---- Parallel processing: one horizontal band per worker thread --------
+      const params: UpscaleParams = {
+        sharpenAmount,
+        varianceThreshold,
+        clampRinging,
+        refinePasses,
+        edgeSmoothing,
+      };
+      const bands = planBands(srcHeight, targetHeight, getThreadCount(), params);
+      const threadLabel = bands.length > 1 ? ` • ${bands.length} threads` : '';
+      const out = new Uint8ClampedArray(targetWidth * targetHeight * 4);
+      const bandProgress = new Array<number>(bands.length).fill(0);
 
-      const worker = new Worker(
-        new URL('../workers/upscale.worker.ts', import.meta.url),
-        { type: 'module' }
+      abortJobRef.current?.(new Error('Cancelled'));
+      terminateAll();
+      const workers = bands.map(
+        () => new Worker(new URL('../workers/upscale.worker.ts', import.meta.url), { type: 'module' })
       );
-      workerRef.current = worker;
+      workersRef.current = workers;
 
-      return new Promise<UpscaleResult>((resolve, reject) => {
-        worker.onmessage = async (e: MessageEvent) => {
-          const { type, progress: p, stage: s, buffer, width, height, error: err } = e.data;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          let remaining = bands.length;
+          let settled = false;
+          const fail = (err: Error) => {
+            if (settled) return;
+            settled = true;
+            abortJobRef.current = null;
+            for (const w of workers) w.terminate();
+            reject(err);
+          };
+          abortJobRef.current = fail;
 
-          if (type === 'PROGRESS') {
-            setProgress(p);
-            setStage(s);
-          } else if (type === 'ERROR') {
-            setIsProcessing(false);
-            setError(err);
-            reject(new Error(err));
-          } else if (type === 'DONE') {
-            setStage('Rendering upscaled result to canvas…');
-            setProgress(100);
-
-            try {
-              const resultBytes = new Uint8ClampedArray(buffer);
-              const resultImageData = new ImageData(resultBytes, width, height);
-
-              const outCanvas = document.createElement('canvas');
-              outCanvas.width = width;
-              outCanvas.height = height;
-              const outCtx = outCanvas.getContext('2d');
-              if (!outCtx) throw new Error('Could not create output canvas');
-
-              outCtx.putImageData(resultImageData, 0, 0);
-
-              const upscaledBlob = await new Promise<Blob>((resBlob, rejBlob) => {
-                outCanvas.toBlob(
-                  (b) => (b ? resBlob(b) : rejBlob(new Error('Export to blob failed'))),
-                  'image/jpeg',
-                  0.96
-                );
-              });
-
-              // Also create a high-performance preview canvas
-              const maxPrev = 1600;
-              const prevScale = Math.min(1, maxPrev / Math.max(width, height));
-              const prevCanvas = document.createElement('canvas');
-              prevCanvas.width = Math.max(1, Math.round(width * prevScale));
-              prevCanvas.height = Math.max(1, Math.round(height * prevScale));
-              const prevCtx = prevCanvas.getContext('2d');
-              if (prevCtx) {
-                prevCtx.imageSmoothingEnabled = true;
-                prevCtx.imageSmoothingQuality = 'high';
-                prevCtx.drawImage(outCanvas, 0, 0, prevCanvas.width, prevCanvas.height);
+          bands.forEach((band, i) => {
+            const worker = workers[i];
+            worker.onmessage = (e: MessageEvent) => {
+              const { type, progress: p, stage: s, buffer, error: err } = e.data;
+              if (settled) return;
+              if (type === 'PROGRESS') {
+                bandProgress[i] = p;
+                // Overall progress = average across bands; label from the slowest band
+                const avg = bandProgress.reduce((a, b) => a + b, 0) / bands.length;
+                setProgress(Math.min(99, Math.round(avg)));
+                if (p === Math.min(...bandProgress)) setStage(`${s}${threadLabel}`);
+              } else if (type === 'ERROR') {
+                fail(new Error(err));
+              } else if (type === 'DONE') {
+                stitchBand(out, new Uint8ClampedArray(buffer), targetWidth, band);
+                worker.terminate();
+                if (--remaining === 0) {
+                  settled = true;
+                  abortJobRef.current = null;
+                  resolve();
+                }
               }
+            };
+            worker.onerror = (wErr) => fail(new Error(wErr.message || 'Worker thread execution error'));
 
-              setIsProcessing(false);
-              resolve({
-                upscaledBlob,
-                previewCanvas: prevCanvas,
-                width,
-                height,
-              });
-            } catch (postErr: any) {
-              setIsProcessing(false);
-              setError(postErr?.message || 'Failed to assemble upscaled image');
-              reject(postErr);
-            }
-          }
-        };
-
-        worker.onerror = (wErr) => {
+            // Each worker gets its own copy of just its source rows (transferred, zero-copy after slice)
+            const rowBytes = srcWidth * 4;
+            const slice = srcPixels.slice(band.srcY0 * rowBytes, (band.srcY0 + band.srcRows) * rowBytes);
+            worker.postMessage(
+              {
+                imageBuffer: slice.buffer,
+                srcWidth,
+                srcHeight: band.srcRows,
+                targetWidth,
+                targetHeight: band.dstRows,
+                ...params,
+                region: {
+                  srcY0: band.srcY0,
+                  dstY0: band.dstY0,
+                  fullSrcH: srcHeight,
+                  fullDstH: targetHeight,
+                },
+              },
+              [slice.buffer]
+            );
+          });
+        });
+      } catch (err: any) {
+        terminateAll();
+        if (err?.message !== 'Cancelled') {
           setIsProcessing(false);
-          const msg = wErr.message || 'Worker thread execution error';
-          setError(msg);
-          reject(new Error(msg));
-        };
+          setError(/memory/i.test(err?.message || '') ? 'Out of memory: try a smaller scale factor.' : err?.message);
+        }
+        throw err;
+      }
+      workersRef.current = [];
 
-        // Transfer raw source buffer to worker for zero-copy
-        worker.postMessage(
-          {
-            imageBuffer: rawBuffer,
-            srcWidth,
-            srcHeight,
-            targetWidth,
-            targetHeight,
-            sharpenAmount,
-            varianceThreshold,
-            clampRinging,
-            refinePasses,
-            edgeSmoothing,
-          },
-          [rawBuffer]
-        );
-      });
+      // ---- Assemble result -----------------------------------------------------
+      setStage('Rendering upscaled result to canvas…');
+      setProgress(100);
+      try {
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = targetWidth;
+        outCanvas.height = targetHeight;
+        const outCtx = outCanvas.getContext('2d');
+        if (!outCtx) throw new Error('Could not create output canvas');
+        outCtx.putImageData(new ImageData(out, targetWidth, targetHeight), 0, 0);
+
+        const upscaledBlob = await new Promise<Blob>((resBlob, rejBlob) => {
+          outCanvas.toBlob(
+            (b) => (b ? resBlob(b) : rejBlob(new Error('Export to blob failed'))),
+            'image/jpeg',
+            0.96
+          );
+        });
+
+        // Also create a high-performance preview canvas
+        const maxPrev = 1600;
+        const prevScale = Math.min(1, maxPrev / Math.max(targetWidth, targetHeight));
+        const prevCanvas = document.createElement('canvas');
+        prevCanvas.width = Math.max(1, Math.round(targetWidth * prevScale));
+        prevCanvas.height = Math.max(1, Math.round(targetHeight * prevScale));
+        const prevCtx = prevCanvas.getContext('2d');
+        if (prevCtx) {
+          prevCtx.imageSmoothingEnabled = true;
+          prevCtx.imageSmoothingQuality = 'high';
+          prevCtx.drawImage(outCanvas, 0, 0, prevCanvas.width, prevCanvas.height);
+        }
+
+        setIsProcessing(false);
+        return { upscaledBlob, previewCanvas: prevCanvas, width: targetWidth, height: targetHeight };
+      } catch (postErr: any) {
+        setIsProcessing(false);
+        setError(postErr?.message || 'Failed to assemble upscaled image');
+        throw postErr;
+      }
     },
-    []
+    [terminateAll]
   );
 
   return {

@@ -98,3 +98,26 @@ test('preserves alpha and colour', () => {
   assert.equal(out[3], 255);
   assert.equal(out[out.length - 1], 0);
 });
+
+test('multi-threaded bands produce the same image as a single pass', async () => {
+  const { upscaleRGBABanded, planBands } = await import('./upscaleEngine.ts');
+  const sw = 90;
+  const sh = 240;
+  // busy content: text-like hard edges + gradients + diagonals
+  const src = makeRGBA(sw, sh, (x, y) =>
+    ((x >> 3) + (y >> 3)) % 2 ? 230 : 25 + ((x * 3 + y * 5) % 60) + (x === y % sw ? 100 : 0)
+  );
+  for (const [dw, dh, p] of [
+    [sw * 3, sh * 3, params],
+    [Math.round(sw * 2.4), Math.round(sh * 2.4), { ...params, refinePasses: 6, edgeSmoothing: 1 }],
+    [Math.round(sw * 0.7), Math.round(sh * 0.7), { ...params, refinePasses: 0, edgeSmoothing: 0 }],
+  ] as const) {
+    const bands = planBands(sh, dh, 4, p);
+    assert.ok(bands.length > 1, 'test should exercise multiple bands');
+    const single = upscaleRGBA(src, sw, sh, dw, dh, p);
+    const multi = upscaleRGBABanded(src, sw, sh, dw, dh, p, 4);
+    let maxDiff = 0;
+    for (let i = 0; i < single.length; i++) maxDiff = Math.max(maxDiff, Math.abs(single[i] - multi[i]));
+    assert.ok(maxDiff <= 1, `${dw}x${dh}: banded output differs by up to ${maxDiff}`);
+  }
+});

@@ -19,6 +19,7 @@ self.onmessage = (e: MessageEvent) => {
     clampRinging = false,
     refinePasses = 3,
     edgeSmoothing = 0.7,
+    region, // optional BandRegion when this worker processes one band of a parallel job
   } = e.data;
 
   try {
@@ -35,7 +36,8 @@ self.onmessage = (e: MessageEvent) => {
         if (progress === lastReported) return;
         lastReported = progress;
         self.postMessage({ type: 'PROGRESS', progress, stage });
-      }
+      },
+      region
     );
 
     self.postMessage({ type: 'PROGRESS', progress: 100, stage: 'Finalizing pixel transfer' });

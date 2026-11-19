@@ -61,7 +61,27 @@ export function computeContribs(
   kernel: Kernel = lanczos3,
   support = 3
 ): Contribs {
-  const scale = dstSize / srcSize;
+  return computeContribsMapped(0, dstSize, 0, srcSize, dstSize / srcSize, kernel, support);
+}
+
+/**
+ * Filter contributions for a WINDOW of a larger resample: destination samples
+ * [dstStart, dstStart+dstCount) of a full-size resample with the given global scale,
+ * reading from the source window [srcStart, srcStart+srcCount). Indices are local to
+ * the source window. With zero offsets this is the plain full-image resample, which lets
+ * parallel bands sample exactly the same positions as a single-threaded run.
+ */
+export function computeContribsMapped(
+  dstStart: number,
+  dstCount: number,
+  srcStart: number,
+  srcCount: number,
+  scale: number,
+  kernel: Kernel = lanczos3,
+  support = 3
+): Contribs {
+  const srcSize = srcCount;
+  const dstSize = dstCount;
   const radius = scale < 1 ? support / scale : support;
   const inv = scale < 1 ? scale : 1;
   const stride = Math.ceil(radius) * 2 + 2;
@@ -70,7 +90,7 @@ export function computeContribs(
   const weights = new Float32Array(dstSize * stride);
 
   for (let i = 0; i < dstSize; i++) {
-    const center = (i + 0.5) / scale - 0.5;
+    const center = (dstStart + i + 0.5) / scale - 0.5 - srcStart;
     const left = Math.max(0, Math.floor(center - radius));
     const right = Math.min(srcSize - 1, Math.ceil(center + radius));
     const n = Math.min(stride, right - left + 1);
@@ -146,16 +166,42 @@ export function resamplePlane(
 
 /** For each output coordinate, the two nearest source sample indices. */
 export function footprintIndices(srcSize: number, dstSize: number): [Int32Array, Int32Array] {
-  const scale = dstSize / srcSize;
-  const i0 = new Int32Array(dstSize);
-  const i1 = new Int32Array(dstSize);
-  for (let i = 0; i < dstSize; i++) {
-    const u = (i + 0.5) / scale - 0.5;
-    const a = Math.min(srcSize - 1, Math.max(0, Math.floor(u)));
+  return footprintIndicesMapped(0, dstSize, 0, srcSize, dstSize / srcSize);
+}
+
+/** Windowed variant of footprintIndices (see computeContribsMapped). */
+export function footprintIndicesMapped(
+  dstStart: number,
+  dstCount: number,
+  srcStart: number,
+  srcCount: number,
+  scale: number
+): [Int32Array, Int32Array] {
+  const i0 = new Int32Array(dstCount);
+  const i1 = new Int32Array(dstCount);
+  for (let i = 0; i < dstCount; i++) {
+    const u = (dstStart + i + 0.5) / scale - 0.5 - srcStart;
+    const a = Math.min(srcCount - 1, Math.max(0, Math.floor(u)));
     i0[i] = a;
-    i1[i] = Math.min(srcSize - 1, Math.max(0, a + 1));
+    i1[i] = Math.min(srcCount - 1, Math.max(0, a + 1));
   }
   return [i0, i1];
+}
+
+/** Nearest source index for each destination sample (windowed). */
+function nearestIndicesMapped(
+  dstStart: number,
+  dstCount: number,
+  srcStart: number,
+  srcCount: number,
+  scale: number
+): Int32Array {
+  const out = new Int32Array(dstCount);
+  for (let i = 0; i < dstCount; i++) {
+    const v = Math.floor((dstStart + i + 0.5) / scale) - srcStart;
+    out[i] = v < 0 ? 0 : v >= srcCount ? srcCount - 1 : v;
+  }
+  return out;
 }
 
 interface Footprint {
@@ -302,7 +348,8 @@ function edgeDirectedSmooth(
   dh: number,
   field: { tx: Float32Array; ty: Float32Array; wt: Float32Array },
   sw: number,
-  sh: number,
+  nearX: Int32Array,
+  nearY: Int32Array,
   scale: number,
   strength: number
 ): void {
@@ -312,10 +359,10 @@ function edgeDirectedSmooth(
   const w1 = 0.2;
   const w2 = 0.1;
   for (let y = 0; y < dh; y++) {
-    const sy = Math.min(sh - 1, Math.floor((y + 0.5) / scale)) * sw;
+    const sy = nearY[y] * sw;
     const o = y * dw;
     for (let x = 0; x < dw; x++) {
-      const si = sy + Math.min(sw - 1, Math.floor((x + 0.5) / scale));
+      const si = sy + nearX[x];
       const k = field.wt[si] * strength;
       const v = H[o + x];
       if (k < 0.02) {
@@ -349,7 +396,20 @@ function gaussianKernel(sigma: number): Float32Array {
 }
 
 /**
+ * Horizontal band of a larger image, for multi-threaded processing.
+ * The rgba passed in holds source rows [srcY0, srcY0+sh); the call produces output rows
+ * [dstY0, dstY0+dh) of a full-size fullSrcH -> fullDstH resample.
+ */
+export interface BandRegion {
+  srcY0: number;
+  dstY0: number;
+  fullSrcH: number;
+  fullDstH: number;
+}
+
+/**
  * Upscale an RGBA buffer. Returns a new RGBA Uint8ClampedArray of dw x dh.
+ * With `region`, sh/dh are the band's local heights (see BandRegion).
  */
 export function upscaleRGBA(
   rgba: Uint8ClampedArray,
@@ -358,9 +418,14 @@ export function upscaleRGBA(
   dw: number,
   dh: number,
   params: UpscaleParams,
-  onProgress: ProgressFn = () => {}
+  onProgress: ProgressFn = () => {},
+  region?: BandRegion
 ): Uint8ClampedArray {
-  const scale = Math.sqrt((dw / sw) * (dh / sh));
+  const srcY0 = region?.srcY0 ?? 0;
+  const dstY0 = region?.dstY0 ?? 0;
+  const scaleX = dw / sw;
+  const scaleY = region ? region.fullDstH / region.fullSrcH : dh / sh;
+  const scale = Math.sqrt(scaleX * scaleY);
   const ns = sw * sh;
   const nd = dw * dh;
 
@@ -381,9 +446,9 @@ export function upscaleRGBA(
   }
 
   const upH = computeContribs(sw, dw);
-  const upV = computeContribs(sh, dh);
+  const upV = computeContribsMapped(dstY0, dh, srcY0, sh, scaleY);
   const [fx0, fx1] = footprintIndices(sw, dw);
-  const [fy0, fy1] = footprintIndices(sh, dh);
+  const [fy0, fy1] = footprintIndicesMapped(dstY0, dh, srcY0, sh, scaleY);
   const fp: Footprint = { fx0, fx1, fy0, fy1 };
 
   // ---- 2. Initial Lanczos-3 upscale of luma --------------------------------
@@ -396,7 +461,9 @@ export function upscaleRGBA(
   if (params.edgeSmoothing > 0 && scale > 1.1) {
     onProgress(18, 'Pass 2/5: Edge-directed anti-aliasing (structure tensor)');
     const field = orientationField(Y, sw, sh);
-    edgeDirectedSmooth(H, scratch, dw, dh, field, sw, sh, scale, params.edgeSmoothing);
+    const nearX = nearestIndicesMapped(0, dw, 0, sw, scaleX);
+    const nearY = nearestIndicesMapped(dstY0, dh, srcY0, sh, scaleY);
+    edgeDirectedSmooth(H, scratch, dw, dh, field, sw, nearX, nearY, scale, params.edgeSmoothing);
     const t = H;
     H = scratch;
     scratch = t;
@@ -407,7 +474,7 @@ export function upscaleRGBA(
   const passes = Math.max(0, Math.min(6, Math.round(params.refinePasses)));
   if (passes > 0) {
     const downH = computeContribs(dw, sw, triangle, 1);
-    const downV = computeContribs(dh, sh, triangle, 1);
+    const downV = computeContribsMapped(srcY0, sh, dstY0, dh, 1 / scaleY, triangle, 1);
     const D = new Float32Array(ns);
     for (let k = 0; k < passes; k++) {
       onProgress(
@@ -523,5 +590,100 @@ export function upscaleRGBA(
     }
   }
 
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Multi-threading support: split the output into horizontal bands with overlap
+// ---------------------------------------------------------------------------
+
+export interface BandPlan {
+  /** source rows handed to the worker */
+  srcY0: number;
+  srcRows: number;
+  /** output rows the worker computes (band + overlap) */
+  dstY0: number;
+  dstRows: number;
+  /** rows of the worker output to keep, and where they go in the final image */
+  keepFrom: number;
+  keepRows: number;
+  outY0: number;
+}
+
+/**
+ * Overlap (in source rows) needed so that a band's kept rows are unaffected by the cut:
+ * the sum of the reach of every stage (Lanczos, back-projection passes, edge field,
+ * sharpening blur), with margin.
+ */
+export function bandOverlapRows(srcH: number, dstH: number, params: UpscaleParams): number {
+  const scaleY = dstH / srcH;
+  const lanczosReach = scaleY < 1 ? 3 / scaleY : 3;
+  const passes = Math.max(0, Math.min(6, Math.round(params.refinePasses)));
+  const sigma = Math.max(0.8, 0.6 * scaleY);
+  const blurReach = Math.ceil(sigma * 3) / scaleY;
+  return Math.ceil(lanczosReach * (1 + passes) + passes + 4 + blurReach) + 4;
+}
+
+export function planBands(srcH: number, dstH: number, threads: number, params: UpscaleParams): BandPlan[] {
+  const scaleY = dstH / srcH;
+  const halo = bandOverlapRows(srcH, dstH, params);
+  const haloDst = Math.ceil(halo * scaleY);
+  // Keep bands tall enough that the overlap stays a small fraction of the work
+  const minKeep = Math.max(64, haloDst * 3);
+  const n = Math.max(1, Math.min(threads, Math.floor(dstH / minKeep)));
+
+  const bands: BandPlan[] = [];
+  for (let k = 0; k < n; k++) {
+    const d0 = Math.round((k * dstH) / n);
+    const d1 = Math.round(((k + 1) * dstH) / n);
+    const sLo = Math.floor((d0 + 0.5) / scaleY - 0.5);
+    const sHi = Math.ceil((d1 - 0.5) / scaleY - 0.5) + 1;
+    const srcA = Math.max(0, sLo - halo);
+    const srcB = Math.min(srcH, sHi + halo);
+    const dA = Math.max(0, d0 - haloDst);
+    const dB = Math.min(dstH, d1 + haloDst);
+    bands.push({
+      srcY0: srcA,
+      srcRows: srcB - srcA,
+      dstY0: dA,
+      dstRows: dB - dA,
+      keepFrom: d0 - dA,
+      keepRows: d1 - d0,
+      outY0: d0,
+    });
+  }
+  return bands;
+}
+
+/** Copy a band's kept rows into the final output buffer. */
+export function stitchBand(out: Uint8ClampedArray, bandOut: Uint8ClampedArray, dw: number, band: BandPlan): void {
+  const rowBytes = dw * 4;
+  out.set(
+    bandOut.subarray(band.keepFrom * rowBytes, (band.keepFrom + band.keepRows) * rowBytes),
+    band.outY0 * rowBytes
+  );
+}
+
+/** Sequential reference implementation of the banded path (used by tests). */
+export function upscaleRGBABanded(
+  rgba: Uint8ClampedArray,
+  sw: number,
+  sh: number,
+  dw: number,
+  dh: number,
+  params: UpscaleParams,
+  threads: number
+): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(dw * dh * 4);
+  for (const b of planBands(sh, dh, threads, params)) {
+    const slice = rgba.subarray(b.srcY0 * sw * 4, (b.srcY0 + b.srcRows) * sw * 4);
+    const res = upscaleRGBA(slice, sw, b.srcRows, dw, b.dstRows, params, undefined, {
+      srcY0: b.srcY0,
+      dstY0: b.dstY0,
+      fullSrcH: sh,
+      fullDstH: dh,
+    });
+    stitchBand(out, res, dw, b);
+  }
   return out;
 }
