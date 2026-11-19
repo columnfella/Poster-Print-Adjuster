@@ -466,7 +466,7 @@ export default function App() {
         });
       }, 50);
 
-      showToast(`Lanczos-3 Upscaled to ${newWidth} × ${newHeight} px!`);
+      showToast(`Upscaled to ${newWidth} × ${newHeight} px!`);
     },
     [historyIndex, showToast]
   );
@@ -931,7 +931,7 @@ export default function App() {
         theme={theme}
       />
 
-      {/* Programmatic Lanczos-3 Upscaler Modal */}
+      {/* Edge-Aware Upscaler Modal */}
       {isUpscalerOpen && currentItem && currentVerdict && (
         <PosterUpscalerUI
           key={`${currentItem.id}_${currentItem.version}`}

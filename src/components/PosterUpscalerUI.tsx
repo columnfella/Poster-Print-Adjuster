@@ -71,6 +71,8 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
   const [sharpenAmount, setSharpenAmount] = useState<number>(ARTWORK_PRESETS.text.sharpenAmount);
   const [varianceThreshold, setVarianceThreshold] = useState<number>(ARTWORK_PRESETS.text.varianceThreshold);
   const [clampRinging, setClampRinging] = useState<boolean>(ARTWORK_PRESETS.text.clampRinging);
+  const [refinePasses, setRefinePasses] = useState<number>(ARTWORK_PRESETS.text.refinePasses);
+  const [edgeSmoothing, setEdgeSmoothing] = useState<number>(ARTWORK_PRESETS.text.edgeSmoothing);
   const [completedResult, setCompletedResult] = useState<UpscaleResult | null>(null);
 
   const { isProcessing, progress, stage, error, upscaleImage, cancelUpscale } = useUpscaler();
@@ -100,6 +102,8 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
       setSharpenAmount(c.sharpenAmount);
       setVarianceThreshold(c.varianceThreshold);
       setClampRinging(c.clampRinging);
+      setRefinePasses(c.refinePasses);
+      setEdgeSmoothing(c.edgeSmoothing);
       setCompletedResult(null);
       return;
     }
@@ -126,11 +130,15 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
       setSharpenAmount(1.0);
       setVarianceThreshold(25);
       setClampRinging(false);
+      setRefinePasses(3);
+      setEdgeSmoothing(0.7);
     } else {
       const blended = blendArtworkPresets(nextPresets);
       setSharpenAmount(blended.sharpenAmount);
       setVarianceThreshold(blended.varianceThreshold);
       setClampRinging(blended.clampRinging);
+      setRefinePasses(blended.refinePasses);
+      setEdgeSmoothing(blended.edgeSmoothing);
     }
     setCompletedResult(null);
   };
@@ -153,12 +161,26 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
     setCompletedResult(null);
   };
 
+  const handleManualRefineChange = (val: number) => {
+    setRefinePasses(val);
+    setSelectedPresets(['custom']);
+    setCompletedResult(null);
+  };
+
+  const handleManualEdgeSmoothingChange = (val: number) => {
+    setEdgeSmoothing(val);
+    setSelectedPresets(['custom']);
+    setCompletedResult(null);
+  };
+
   const handleResetToPresets = () => {
     setSelectedPresets(['text']);
     const def = getPresetById('text');
     setSharpenAmount(def.sharpenAmount);
     setVarianceThreshold(def.varianceThreshold);
     setClampRinging(def.clampRinging);
+    setRefinePasses(def.refinePasses);
+    setEdgeSmoothing(def.edgeSmoothing);
     setCompletedResult(null);
   };
 
@@ -171,7 +193,9 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
         targetSpec.targetHeight,
         sharpenAmount,
         varianceThreshold,
-        clampRinging
+        clampRinging,
+        refinePasses,
+        edgeSmoothing
       );
       setCompletedResult(res);
     } catch (err) {
@@ -205,7 +229,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
 
   const handleDownloadStandalone = async () => {
     if (!completedResult || !item) return;
-    const filename = `${item.name.replace(/\.[^.]+$/, '')}_lanczos3_upscaled_${completedResult.width}x${completedResult.height}.jpg`;
+    const filename = `${item.name.replace(/\.[^.]+$/, '')}_upscaled_${completedResult.width}x${completedResult.height}.jpg`;
     await downloadJpegBlob(completedResult.upscaledBlob, filename);
   };
 
@@ -272,7 +296,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-bold text-sm sm:text-base">
-                  Lanczos-3 Archival Upscaler
+                  Edge-Aware Reconstruction Upscaler
                 </h3>
                 <span className="text-[10px] bg-[#2563EB]/15 text-[#2563EB] dark:text-[#38bdf8] border border-[#2563EB]/30 px-2 py-0.5 rounded-full font-semibold">
                   300 DPI Engine
@@ -592,7 +616,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 }`}
               >
                 <div className="font-bold text-xs">2.0× Scale</div>
-                <div className="text-[10px] opacity-75 mt-0.5">Lanczos-3 2D</div>
+                <div className="text-[10px] opacity-75 mt-0.5">Standard</div>
               </button>
 
               <button
@@ -724,6 +748,64 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex justify-between text-[11px] font-mono mb-1">
+                    <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>
+                      Detail Reconstruction Passes
+                    </span>
+                    <span className="text-[#2563EB] dark:text-[#38bdf8] font-bold">
+                      {refinePasses}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="6"
+                    step="1"
+                    value={refinePasses}
+                    disabled={isProcessing}
+                    onChange={(e) => handleManualRefineChange(parseInt(e.target.value))}
+                    className="w-full accent-[#2563EB] cursor-pointer"
+                  />
+                  <p
+                    className={`text-[10px] mt-1 ${
+                      isLight ? 'text-slate-500' : 'text-[#94A3B8]'
+                    }`}
+                  >
+                    Iterative back-projection: restores edge sharpness lost to interpolation.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-[11px] font-mono mb-1">
+                    <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>
+                      Edge Anti-Aliasing
+                    </span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                      {Math.round(edgeSmoothing * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={edgeSmoothing}
+                    disabled={isProcessing}
+                    onChange={(e) => handleManualEdgeSmoothingChange(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-500 cursor-pointer"
+                  />
+                  <p
+                    className={`text-[10px] mt-1 ${
+                      isLight ? 'text-slate-500' : 'text-[#94A3B8]'
+                    }`}
+                  >
+                    Smooths staircase jaggies along diagonal edges and curves.
+                  </p>
+                </div>
+              </div>
+
               {/* Anti-Ringing / Halo Suppression Toggle */}
               <div
                 className={`pt-2 border-t flex items-center justify-between ${
@@ -838,7 +920,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                   isLight ? 'text-emerald-800' : 'text-[#7ee787]'
                 }`}
               >
-                The artwork for <span className="font-semibold">{item.name}</span> has been rebuilt using 2D Lanczos-3 sinc interpolation and style-tuned unsharp masking.
+                The artwork for <span className="font-semibold">{item.name}</span> has been rebuilt with edge-directed interpolation, back-projection detail reconstruction and scale-aware sharpening.
               </p>
 
               <div className="flex flex-wrap gap-2 pt-1">
@@ -907,7 +989,7 @@ export const PosterUpscalerUI: React.FC<PosterUpscalerUIProps> = ({
                 className="bg-gradient-to-r from-[#2563EB] to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40 text-white font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 text-xs shadow-sm active:scale-98"
               >
                 <Wand2 className="w-3.5 h-3.5 text-amber-300" />
-                <span>{isProcessing ? 'Processing Lanczos-3…' : 'Process Upscale'}</span>
+                <span>{isProcessing ? 'Upscaling…' : 'Process Upscale'}</span>
               </button>
             )}
           </div>

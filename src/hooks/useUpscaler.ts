@@ -55,7 +55,9 @@ export function useUpscaler() {
       targetHeight: number,
       sharpenAmount: number = 1.3,
       varianceThreshold: number = 25,
-      clampRinging: boolean = false
+      clampRinging: boolean = false,
+      refinePasses: number = 3,
+      edgeSmoothing: number = 0.7
     ): Promise<UpscaleResult> => {
       setIsProcessing(true);
       setProgress(0);
@@ -63,34 +65,41 @@ export function useUpscaler() {
       setError(null);
 
       // Extract raw RGBA ImageData from source
-      let srcCanvas: HTMLCanvasElement;
       let srcWidth: number;
       let srcHeight: number;
+      let rawBuffer: ArrayBuffer;
 
-      if (source instanceof HTMLCanvasElement) {
-        srcCanvas = source;
-        srcWidth = source.width;
-        srcHeight = source.height;
-      } else {
-        const bmp = await createImageBitmap(source);
-        srcWidth = bmp.width;
-        srcHeight = bmp.height;
-        srcCanvas = document.createElement('canvas');
-        srcCanvas.width = srcWidth;
-        srcCanvas.height = srcHeight;
-        const ctx = srcCanvas.getContext('2d');
-        if (!ctx) {
+      try {
+        let srcCanvas: HTMLCanvasElement;
+        if (source instanceof HTMLCanvasElement) {
+          srcCanvas = source;
+          srcWidth = source.width;
+          srcHeight = source.height;
+        } else {
+          const bmp = await createImageBitmap(source);
+          srcWidth = bmp.width;
+          srcHeight = bmp.height;
+          srcCanvas = document.createElement('canvas');
+          srcCanvas.width = srcWidth;
+          srcCanvas.height = srcHeight;
+          const ctx = srcCanvas.getContext('2d');
+          if (!ctx) {
+            bmp.close();
+            throw new Error('Failed to create 2D canvas context');
+          }
+          ctx.drawImage(bmp, 0, 0);
           bmp.close();
-          throw new Error('Failed to create 2D canvas context');
         }
-        ctx.drawImage(bmp, 0, 0);
-        bmp.close();
-      }
 
-      const srcCtx = srcCanvas.getContext('2d');
-      if (!srcCtx) throw new Error('Could not access canvas context');
-      const srcImageData = srcCtx.getImageData(0, 0, srcWidth, srcHeight);
-      const rawBuffer = srcImageData.data.buffer;
+        const srcCtx = srcCanvas.getContext('2d');
+        if (!srcCtx) throw new Error('Could not access canvas context');
+        rawBuffer = srcCtx.getImageData(0, 0, srcWidth, srcHeight).data.buffer as ArrayBuffer;
+      } catch (decodeErr: any) {
+        const msg = decodeErr?.message || 'Could not decode source image';
+        setIsProcessing(false);
+        setError(msg);
+        throw decodeErr instanceof Error ? decodeErr : new Error(msg);
+      }
 
       // Spawn Web Worker using Vite module worker syntax
       if (workerRef.current) {
@@ -184,6 +193,8 @@ export function useUpscaler() {
             sharpenAmount,
             varianceThreshold,
             clampRinging,
+            refinePasses,
+            edgeSmoothing,
           },
           [rawBuffer]
         );

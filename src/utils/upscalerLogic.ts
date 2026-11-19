@@ -177,6 +177,10 @@ export interface ArtworkPreset {
   sharpenAmount: number;
   varianceThreshold: number;
   clampRinging: boolean;
+  /** Iterative back-projection passes (detail reconstruction), 0..6 */
+  refinePasses: number;
+  /** Edge-directed anti-aliasing strength, 0..1 */
+  edgeSmoothing: number;
 }
 
 export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
@@ -188,6 +192,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 1.8,
     varianceThreshold: 15,
     clampRinging: true,
+    refinePasses: 4,
+    edgeSmoothing: 0.9,
   },
   lineart: {
     id: 'lineart',
@@ -197,6 +203,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 1.6,
     varianceThreshold: 20,
     clampRinging: true,
+    refinePasses: 4,
+    edgeSmoothing: 1.0,
   },
   photo: {
     id: 'photo',
@@ -206,6 +214,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 0.9,
     varianceThreshold: 35,
     clampRinging: false,
+    refinePasses: 2,
+    edgeSmoothing: 0.4,
   },
   'digital-art': {
     id: 'digital-art',
@@ -215,6 +225,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 1.3,
     varianceThreshold: 25,
     clampRinging: false,
+    refinePasses: 3,
+    edgeSmoothing: 0.7,
   },
   vintage: {
     id: 'vintage',
@@ -224,6 +236,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 0.7,
     varianceThreshold: 45,
     clampRinging: false,
+    refinePasses: 2,
+    edgeSmoothing: 0.3,
   },
   custom: {
     id: 'custom',
@@ -233,6 +247,8 @@ export const ARTWORK_PRESETS: Record<ArtworkPresetId, ArtworkPreset> = {
     sharpenAmount: 1.3,
     varianceThreshold: 25,
     clampRinging: false,
+    refinePasses: 3,
+    edgeSmoothing: 0.7,
   },
 };
 
@@ -250,6 +266,8 @@ export function blendArtworkPresets(
   sharpenAmount: number;
   varianceThreshold: number;
   clampRinging: boolean;
+  refinePasses: number;
+  edgeSmoothing: number;
   name: string;
   tagline: string;
   description: string;
@@ -257,25 +275,14 @@ export function blendArtworkPresets(
 } {
   const valid = presetIds.filter((id) => id !== 'custom');
 
-  if (valid.length === 0) {
-    const c = getPresetById('custom');
-    return {
-      sharpenAmount: c.sharpenAmount,
-      varianceThreshold: c.varianceThreshold,
-      clampRinging: c.clampRinging,
-      name: c.name,
-      tagline: c.tagline,
-      description: c.description,
-      isHybrid: false,
-    };
-  }
-
-  if (valid.length === 1) {
-    const p = getPresetById(valid[0]);
+  if (valid.length <= 1) {
+    const p = getPresetById(valid.length === 0 ? 'custom' : valid[0]);
     return {
       sharpenAmount: p.sharpenAmount,
       varianceThreshold: p.varianceThreshold,
       clampRinging: p.clampRinging,
+      refinePasses: p.refinePasses,
+      edgeSmoothing: p.edgeSmoothing,
       name: p.name,
       tagline: p.tagline,
       description: p.description,
@@ -295,6 +302,8 @@ export function blendArtworkPresets(
     sharpenAmount: avgSharpen,
     varianceThreshold: avgVariance,
     clampRinging,
+    refinePasses: Math.round((p1.refinePasses + p2.refinePasses) / 2),
+    edgeSmoothing: Number(((p1.edgeSmoothing + p2.edgeSmoothing) / 2).toFixed(2)),
     name: `${p1.name} + ${p2.name}`,
     tagline: `Hybrid Blend (${p1.id} + ${p2.id})`,
     description: `Balanced 50/50 blend combining ${p1.name} and ${p2.name} processing characteristics.`,
