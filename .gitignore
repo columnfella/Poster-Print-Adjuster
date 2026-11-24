@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Server code is kept private
+server.ts
+server/
